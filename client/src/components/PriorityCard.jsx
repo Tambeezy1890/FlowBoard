@@ -1,7 +1,14 @@
-import { Ellipsis, Minimize2, Plus, StickyNotePlus } from "lucide-react";
+import {
+  Ellipsis,
+  Minimize2,
+  Plus,
+  StickyNotePlus,
+  Trash2,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import Task from "./Task";
 import EditTasks from "../pages/EditTasks";
+import { useDroppable } from "@dnd-kit/core";
 
 function PriorityCard({
   column,
@@ -11,6 +18,7 @@ function PriorityCard({
   updateTaskDescription,
   columnId,
   updateTitle,
+  deleteTask,
 }) {
   const [card, setCard] = useState("");
   const handleChange = (e) => {
@@ -20,6 +28,9 @@ function PriorityCard({
   const [editModal, setEditModal] = useState({
     show: false,
     task: null,
+  });
+  const { setNodeRef } = useDroppable({
+    id: column.id,
   });
 
   useEffect(() => {}, [editModal]);
@@ -47,7 +58,10 @@ function PriorityCard({
           </div>
         </div>
       )}
-      <div className="bg-black max-w-60 w-full p-2 rounded-xl text-white">
+      <div
+        className="bg-black max-w-60 w-full p-2 rounded-xl text-white"
+        ref={setNodeRef}
+      >
         <div className="flex flex-col gap-2 ">
           <div className="flex justify-between ">
             <h2 className="text-white">{column.title}</h2>
@@ -61,16 +75,13 @@ function PriorityCard({
           </div>
 
           {column.tasks.map((task) => (
-            <div
-              key={task.id}
-              onClick={() => {
-                setEditModal({
-                  show: true,
-                  task: task,
-                });
-              }}
-            >
-              <Task task={task} />
+            <div key={task.id}>
+              <Task
+                task={task}
+                deleteTask={deleteTask}
+                columnId={columnId}
+                setEditModal={setEditModal}
+              />
             </div>
           ))}
 
