@@ -31,8 +31,43 @@ function UserDashboard() {
                 {
                   id: Date.now(),
                   title: taskTitle,
+                  description: "",
                 },
               ],
+            }
+          : column
+      )
+    );
+  };
+
+  const updateTaskDescription = (columnId, taskId, description) => {
+    setColumns((prev) =>
+      prev.map((column) =>
+        column.id === columnId
+          ? {
+              ...column,
+              tasks: column.tasks.map((task) =>
+                task.id === taskId
+                  ? {
+                      ...task,
+                      description,
+                    }
+                  : task
+              ),
+            }
+          : column
+      )
+    );
+  };
+  const updateTitle = (columnId, taskId, newTitle) => {
+    setColumns((prev) =>
+      prev.map((column) =>
+        column.id === columnId
+          ? {
+              ...column,
+              tasks: column.tasks.map((task) =>
+                task.id === taskId ? { ...task, title: newTitle } : task
+              ),
             }
           : column
       )
@@ -52,6 +87,9 @@ function UserDashboard() {
               addTask={addTask}
               count={card.tasks?.length}
               title={card.title}
+              updateTaskDescription={updateTaskDescription}
+              columnId={card.id}
+              updateTitle={updateTitle}
             />
           ))}
         </div>

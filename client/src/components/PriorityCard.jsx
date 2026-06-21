@@ -3,11 +3,20 @@ import React, { useEffect, useState } from "react";
 import Task from "./Task";
 import EditTasks from "../pages/EditTasks";
 
-function PriorityCard({ column, addTask, count, title }) {
+function PriorityCard({
+  column,
+  addTask,
+  count,
+  title,
+  updateTaskDescription,
+  columnId,
+  updateTitle,
+}) {
   const [card, setCard] = useState("");
   const handleChange = (e) => {
     setCard(e.target.value);
   };
+
   const [editModal, setEditModal] = useState({
     show: false,
     task: null,
@@ -27,7 +36,14 @@ function PriorityCard({ column, addTask, count, title }) {
           }}
         >
           <div className="p-6 w-full " onClick={(e) => e.stopPropagation()}>
-            <EditTasks task={editModal.task} title={title} />
+            <EditTasks
+              task={editModal.task}
+              title={title}
+              updateTaskDescription={updateTaskDescription}
+              columnId={columnId}
+              updateTitle={updateTitle}
+              setEditModal={setEditModal}
+            />
           </div>
         </div>
       )}

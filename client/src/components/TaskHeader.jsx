@@ -1,7 +1,7 @@
 import { Ellipsis, Eye, Image, X } from "lucide-react";
 import React from "react";
 
-function TaskHeader({ title }) {
+function TaskHeader({ title, setEditModal }) {
   return (
     <div className=" flex justify-between text-white items-center mb-2">
       <div>{title}</div>
@@ -9,7 +9,15 @@ function TaskHeader({ title }) {
         <Image size={20} />
         <Eye size={20} />
         <Ellipsis size={20} />
-        <X size={20} />
+        <X
+          size={20}
+          onClick={() =>
+            setEditModal({
+              show: false,
+              task: null,
+            })
+          }
+        />
       </div>
     </div>
   );

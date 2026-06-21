@@ -1,21 +1,29 @@
 import { ListSortDescending } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
+function Description({ task, updateTaskDescription, columnId }) {
+  const [description, setDescription] = useState(task.description || "");
 
-function Description() {
+  const handleChange = (e) => {
+    const newDescription = e.target.value;
+
+    setDescription(newDescription);
+    updateTaskDescription(columnId, task.id, newDescription);
+  };
+
   return (
     <div className="mt-4">
       <div className="flex text-white gap-3">
-        {" "}
         <ListSortDescending /> Description
       </div>
-      <div className="border border-slate-200 mt-4 ml-4">
+
+      <div className="border border-slate-200 mt-4 ml-4 p-4">
         <textarea
-          name=""
-          id=""
-          rows={4}
-          cols={160}
+          value={description}
+          onChange={handleChange}
           placeholder="Add a more detailed description"
-          className="w-full bg-transparent outline-none resize-none p-2"
+          rows={4}
+          cols={60}
+          className="w-full bg-transparent outline-none resize-none"
         />
       </div>
     </div>
