@@ -1,47 +1,18 @@
 import React, { useEffect, useState } from "react";
 import DashboardHeader from "./DashboardHeader";
 import PriorityCard from "./PriorityCard";
-import { DndContext } from "@dnd-kit/core";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import AddColumn from "./AddColumn";
 
 function UserDashboard() {
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-
-    if (!over) return;
-
-    const taskId = active.id;
-    const targetColumnId = over.id;
-
-    setColumns((prev) => {
-      let movedTask = null;
-      let sourceColumnId = null;
-
-      const columnsWithoutTask = prev.map((column) => {
-        const taskExists = column.tasks.some((task) => task.id === taskId);
-
-        if (!taskExists) return column;
-
-        sourceColumnId = column.id;
-        movedTask = column.tasks.find((task) => task.id === taskId);
-
-        return {
-          ...column,
-          tasks: column.tasks.filter((task) => task.id !== taskId),
-        };
-      });
-
-      if (!movedTask || sourceColumnId === targetColumnId) return prev;
-
-      return columnsWithoutTask.map((column) =>
-        column.id === targetColumnId
-          ? {
-              ...column,
-              tasks: [...column.tasks, movedTask],
-            }
-          : column
-      );
-    });
-  };
   const initialColumns = [
     { id: "today", title: "Today", tasks: [] },
     { id: "week", title: "This Week", tasks: [] },
@@ -58,8 +29,88 @@ function UserDashboard() {
   useEffect(() => {
     localStorage.setItem("trello-columns", JSON.stringify(columns));
   }, [columns]);
+  const findColumnId = (columns, id) => {
+    if (columns.some((column) => column.id === id)) return id;
+
+    return columns.find((column) => column.tasks.some((task) => task.id === id))
+      ?.id;
+  };
+
+  const handleDragOver = ({ active, over }) => {
+    if (!over) return;
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    setColumns((prev) => {
+      const sourceColumnId = findColumnId(prev, activeId);
+      const targetColumnId = findColumnId(prev, overId);
+
+      if (!sourceColumnId || !targetColumnId) return prev;
+      if (sourceColumnId === targetColumnId) return prev;
+
+      const sourceColumn = prev.find((col) => col.id === sourceColumnId);
+      const targetColumn = prev.find((col) => col.id === targetColumnId);
+
+      const activeTask = sourceColumn.tasks.find(
+        (task) => task.id === activeId
+      );
+      if (!activeTask) return prev;
+
+      return prev.map((column) => {
+        if (column.id === sourceColumnId) {
+          return {
+            ...column,
+            tasks: column.tasks.filter((task) => task.id !== activeId),
+          };
+        }
+
+        if (column.id === targetColumnId) {
+          return {
+            ...column,
+            tasks: [...targetColumn.tasks, activeTask],
+          };
+        }
+
+        return column;
+      });
+    });
+  };
+
+  const handleDragEnd = ({ active, over }) => {
+    if (!over) return;
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    setColumns((prev) => {
+      const activeColumnId = findColumnId(prev, activeId);
+      const overColumnId = findColumnId(prev, overId);
+
+      if (!activeColumnId || !overColumnId) return prev;
+      if (activeColumnId !== overColumnId) return prev;
+
+      const column = prev.find((col) => col.id === activeColumnId);
+
+      const oldIndex = column.tasks.findIndex((task) => task.id === activeId);
+      const newIndex = column.tasks.findIndex((task) => task.id === overId);
+
+      if (oldIndex === newIndex) return prev;
+
+      return prev.map((col) =>
+        col.id === activeColumnId
+          ? {
+              ...col,
+              tasks: arrayMove(col.tasks, oldIndex, newIndex),
+            }
+          : col
+      );
+    });
+  };
 
   const addTask = (columnId, taskTitle) => {
+    if (!taskTitle.trim()) return;
+
     setColumns((prev) =>
       prev.map((column) =>
         column.id === columnId
@@ -68,8 +119,8 @@ function UserDashboard() {
               tasks: [
                 ...column.tasks,
                 {
-                  id: Date.now(),
-                  title: taskTitle,
+                  id: String(Date.now()),
+                  title: taskTitle.trim(),
                   description: "",
                 },
               ],
@@ -77,6 +128,18 @@ function UserDashboard() {
           : column
       )
     );
+  };
+  const addColumn = (title) => {
+    if (!title.trim()) return;
+
+    setColumns((prev) => [
+      ...prev,
+      {
+        id: String(Date.now()),
+        title: title.trim(),
+        tasks: [],
+      },
+    ]);
   };
 
   const updateTaskDescription = (columnId, taskId, description) => {
@@ -125,9 +188,42 @@ function UserDashboard() {
       )
     );
   };
+  const deleteColumn = (columnId) => {
+    setColumns((prev) => prev.filter((column) => column.id !== columnId));
+  };
+  const updateColumnTitle = (columnId, newTitle) => {
+    if (!newTitle.trim()) return;
+
+    setColumns((prev) =>
+      prev.map((column) =>
+        column.id === columnId
+          ? {
+              ...column,
+              title: newTitle,
+            }
+          : column
+      )
+    );
+  };
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
   return (
-    <DndContext onDragEnd={handleDragEnd}>
-      <div className="bg-purple-600 h-screen rounded-2xl scrollbar-thin  ">
+    <DndContext
+      onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      sensors={sensors}
+    >
+      <div
+        className="bg-linear-to-br
+from-violet-500
+via-purple-500
+to-fuchsia-400  h-[calc(100vh-100px)] rounded-2xl border-slate-400 scrollbar-thin   "
+      >
         <div className="sticky top-0">
           <DashboardHeader />
         </div>
@@ -144,8 +240,11 @@ function UserDashboard() {
                 columnId={card.id}
                 updateTitle={updateTitle}
                 deleteTask={deleteTask}
+                deleteColumn={deleteColumn}
+                updateColumnTitle={updateColumnTitle}
               />
             ))}
+            <AddColumn addColumn={addColumn} />
           </div>
         </div>
       </div>

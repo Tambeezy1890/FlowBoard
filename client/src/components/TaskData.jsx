@@ -7,6 +7,7 @@ import {
   Pin,
   Plus,
   Tag,
+  Trash2,
 } from "lucide-react";
 import React, { useState } from "react";
 import Members from "./Members";
@@ -14,6 +15,7 @@ import Description from "./Description";
 
 function TaskData({
   task,
+
   title,
   updateTaskDescription,
   columnId,
@@ -73,7 +75,6 @@ function TaskData({
         columnId={columnId}
         updateTaskDescription={updateTaskDescription}
       />
-      <div></div>
     </div>
   );
 }
