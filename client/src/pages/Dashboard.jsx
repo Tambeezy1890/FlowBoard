@@ -6,13 +6,13 @@ import Nav from "../components/Nav";
 
 function Dashboard() {
   return (
-    <div className="bg-slate-600/40 h-screen px-2 py-2 overflow-hidden">
+    <div className="bg-gray-900 h-screen px-4 py-2 overflow-hidden relative">
       <Navbar />
-      <div className="flex">
-        <div className="flex-1 w-full">
+      <div className="flex gap-3">
+        <div className="flex-2 md:flex-1 w-full resize-none">
           <Sidebar />
         </div>
-        <div className="flex-3 w-full h-screen overflow-hidden bg-slate-300">
+        <div className="flex-3 w-full h-screen overflow-hidden bg-slate-900 rounded-2xl shrink">
           <UserDashboard />
         </div>
       </div>

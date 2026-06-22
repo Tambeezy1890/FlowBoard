@@ -11,7 +11,7 @@ function Description({ task, updateTaskDescription, columnId }) {
   };
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 ">
       <div className="flex text-white gap-3">
         <ListSortDescending /> Description
       </div>
