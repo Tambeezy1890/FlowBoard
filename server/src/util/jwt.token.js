@@ -4,7 +4,7 @@ import {
   JWT_SECRET,
   REFRESH_EXPIRES_IN,
   REFRESH_SECRET,
-} from "../config/config";
+} from "../config/config.js";
 export const generateTokensAndSendResponse = (user, res) => {
   const accessToken = jwt.sign({ id: user._id }, JWT_SECRET, {
     expiresIn: EXPIRES_IN,

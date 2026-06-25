@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: [true, "Email already exists"],
     trim: true,
-    lowerCase: true,
+    lowercase: true,
     match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     required: [true, "Email is required"],
   },
@@ -28,5 +28,5 @@ userSchema.pre("save", async function () {
 
   this.password = await bcrypt.hash(this.password, 10);
 });
-const Team = mongoose.model(userSchema, "Team");
+const Team = mongoose.model("Team", userSchema);
 export default Team;
