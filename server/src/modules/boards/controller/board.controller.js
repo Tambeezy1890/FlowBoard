@@ -55,7 +55,7 @@ export const updateBoard = asyncHandler(async (req, res) => {
   const board = await Board.findOneAndUpdate(
     { _id: id, team: req.user._id },
     { $set: fields },
-    { new: true, runValidators: true }
+    { returnDocument: "after", runValidators: true }
   );
 
   if (!board) {

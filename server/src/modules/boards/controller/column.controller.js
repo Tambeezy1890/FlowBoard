@@ -1,7 +1,7 @@
 import { ApiError } from "../../../util/ApiError.js";
 import { asyncHandler } from "../../../util/fetch.js";
 import Board from "../models/board.model.js";
-
+import db from "mongodb";
 export const updateColumn = asyncHandler(async (req, res) => {
   const { boardId, columnId } = req.params;
   const { title, order } = req.body;
@@ -23,7 +23,7 @@ export const updateColumn = asyncHandler(async (req, res) => {
     { $set: updates },
     {
       runValidators: true,
-      new: true,
+      returnDocument: "after",
     }
   );
 
@@ -48,7 +48,7 @@ export const deleteColumn = asyncHandler(async (req, res, next) => {
         },
       },
     },
-    { new: true }
+    { returnDocument: "after" }
   );
   if (!deletedColumn) {
     throw new ApiError(404, "Board not found");
@@ -58,8 +58,12 @@ export const deleteColumn = asyncHandler(async (req, res, next) => {
     .json({ success: true, message: "Column deleted successfully" });
 });
 export const createColumn = asyncHandler(async (req, res, next) => {
-  const { title, order } = req.body;
+  const { columns } = req.body;
   const { boardId } = req.params;
+
+  if (!Array.isArray(columns) || columns.length == 0) {
+    throw new ApiError("Columns must be a non-empty array");
+  }
 
   const created = await Board.findOneAndUpdate(
     {
@@ -69,12 +73,11 @@ export const createColumn = asyncHandler(async (req, res, next) => {
     {
       $push: {
         columns: {
-          title,
-          order,
+          $each: columns,
         },
       },
     },
-    { new: true, runValidators: true }
+    { returnDocument: "after", runValidators: true }
   );
   if (!created) {
     throw new ApiError(404, "Board not found");

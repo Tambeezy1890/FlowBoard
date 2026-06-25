@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
+import { DB_URI } from "../config.js";
 
-const connectDatabase = async (DB_URI) => {
+const connectDatabase = async () => {
   try {
     const connect = await mongoose.connect(DB_URI);
     if (connect) {
