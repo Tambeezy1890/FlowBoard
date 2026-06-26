@@ -31,9 +31,18 @@ const columnValidator = [
     .isInt({ min: 0 })
     .withMessage("Column order must be a number >= 0"),
 ];
+const updateColumnValidator = [
+  body("title").optional().isString().trim().notEmpty(),
+  body("order").optional().isInt({ min: 0 }),
+];
 
 columnRoute.post("/", columnValidator, validateRequest, createColumn);
-columnRoute.patch("/:columnId", columnValidator, validateRequest, updateColumn);
+columnRoute.patch(
+  "/:columnId",
+  updateColumnValidator,
+  validateRequest,
+  updateColumn
+);
 columnRoute.delete("/:columnId", deleteColumn);
 
 export default columnRoute;

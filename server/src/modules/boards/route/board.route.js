@@ -8,6 +8,7 @@ import {
   updateBoard,
 } from "../controller/board.controller.js";
 import columnRoute from "./column.route.js";
+import taskRoute from "../../tasks/route/task.route.js";
 
 const boardRoute = Router();
 
@@ -22,5 +23,6 @@ boardRoute.patch("/boards/:id", updateBoard);
 boardRoute.delete("/boards/:id", deleteBoard);
 
 boardRoute.use("/boards/:boardId/columns", columnRoute);
+boardRoute.use("/boards/:boardId/tasks", taskRoute);
 
 export default boardRoute;
