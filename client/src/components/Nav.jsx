@@ -8,7 +8,7 @@ function Nav() {
 left-1/2
 bottom-[calc(100vh-91%)]
 -transform
--translate-x-1/2 z-1000 bg-slate-800 p-2 rounded-xl "
+-translate-x-1/2 z-100 bg-slate-800 p-2 rounded-xl "
     >
       <div className="flex gap-4">
         <div className="bg-blue-700/50 text-cyan-400 flex items-center gap-1 text-sm rounded-2xl p-1">

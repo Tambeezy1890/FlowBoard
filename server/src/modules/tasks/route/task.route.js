@@ -5,6 +5,7 @@ import {
   deleteTask,
   getTask,
   getTasks,
+  moveTask,
   updateTask,
 } from "../controller/task.controller.js";
 

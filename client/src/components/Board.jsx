@@ -12,7 +12,7 @@ import {
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import AddColumn from "./AddColumn";
 
-function UserDashboard() {
+function Board() {
   const initialColumns = [
     { id: "today", title: "Today", tasks: [] },
     { id: "week", title: "This Week", tasks: [] },
@@ -252,4 +252,4 @@ to-fuchsia-400  h-[calc(100vh-100px)] rounded-2xl border-slate-400 scrollbar-thi
   );
 }
 
-export default UserDashboard;
+export default Board;
