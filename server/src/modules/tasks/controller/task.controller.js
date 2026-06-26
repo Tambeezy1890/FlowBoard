@@ -133,7 +133,53 @@ export const deleteTask = asyncHandler(async (req, res, next) => {
     createdBy: req.user._id,
   });
   if (!deletedTask) {
-    throw new ApiError(400, "Failed to update task");
+    throw new ApiError(400, "Failed to find task");
   }
-  return res.status(204).json({ success: true, data: deletedTask });
+  return res.status(200).json({ success: true, data: deletedTask });
+});
+
+export const moveTask = asyncHandler(async (req, res, next) => {
+  const { boardId, taskId } = req.params;
+  const { column, order } = req.body;
+
+  if (!column || order === undefined) {
+    throw new ApiError(400, "Column and order are required");
+  }
+
+  const board = await Board.findOne({
+    _id: boardId,
+    team: req.user._id,
+    "columns._id": column,
+  });
+
+  if (!board) {
+    throw new ApiError(404, "Board or column not found");
+  }
+
+  const movedTask = await Task.findOneAndUpdate(
+    {
+      _id: taskId,
+      board: boardId,
+      createdBy: req.user._id,
+    },
+    {
+      $set: {
+        column,
+        order,
+      },
+    },
+    {
+      returnDocument: "after",
+      runValidators: true,
+    }
+  );
+
+  if (!movedTask) {
+    throw new ApiError(404, "Task not found");
+  }
+
+  return res.status(200).json({
+    success: true,
+    data: movedTask,
+  });
 });
