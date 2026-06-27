@@ -8,12 +8,23 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access-token");
+    console.log(token);
     if (token) {
-      config.headers.Authoization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    localStorage.clear();
+    return Promise.reject(error);
+  }
 );
 
 export const authService = {
@@ -22,7 +33,7 @@ export const authService = {
       const response = await api.post("/api/v1/auth/login", userData);
       return response.data;
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   },
   getUser: () => {
@@ -32,13 +43,40 @@ export const authService = {
     try {
       const response = await api.post("/api/v1/auth/register", userData);
       return response.data;
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
   },
 };
 export const taskService = {
   createBoard: async (data) => {
-    const response = await api.post("/api/v1/boards", data);
-    return response.data;
+    try {
+      const response = await api.post("/api/v1/boards", data);
+      return response.data;
+    } catch (err) {
+      console.error(err);
+    }
   },
-  createTask: async () => {},
+  getBoards: async () => {
+    try {
+      const response = await api.get("/api/v1/boards");
+      return response.data;
+    } catch (err) {
+      console.error(err);
+    }
+  },
+  getBoard: async (boardId) => {
+    try {
+      const response = await api.get(`/api/v1/boards/${boardId}`);
+      return response.data;
+    } catch (err) {
+      console.error(err);
+    }
+  },
+  createTask: async () => {
+    try {
+    } catch (err) {
+      console.error(err);
+    }
+  },
 };

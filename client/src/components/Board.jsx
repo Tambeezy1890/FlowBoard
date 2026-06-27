@@ -12,23 +12,27 @@ import {
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import AddColumn from "./AddColumn";
 
-function Board() {
+function Board({ activeBoard }) {
   const initialColumns = [
     { id: "today", title: "Today", tasks: [] },
     { id: "week", title: "This Week", tasks: [] },
     { id: "later", title: "Later", tasks: [] },
   ];
-  const [columns, setColumns] = useState(() => {
-    const savedColumns = localStorage.getItem("trello-columns");
-    if (savedColumns) {
-      return JSON.parse(savedColumns);
-    }
-    return initialColumns;
-  });
-
+  const [columns, setColumns] = useState([]);
   useEffect(() => {
-    localStorage.setItem("trello-columns", JSON.stringify(columns));
-  }, [columns]);
+    if (!activeBoard) return;
+
+    const formattedColumns = activeBoard.columns.map((column) => ({
+      id: column._id,
+      _id: column._id,
+      title: column.title,
+      order: column.order,
+      tasks: [],
+    }));
+
+    setColumns(formattedColumns);
+  }, [activeBoard]);
+
   const findColumnId = (columns, id) => {
     if (columns.some((column) => column.id === id)) return id;
 

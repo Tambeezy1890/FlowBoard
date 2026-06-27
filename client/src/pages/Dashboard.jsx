@@ -1,22 +1,42 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Nav from "../components/Nav";
 import Board from "../components/Board";
 import { useAuth } from "../context/authContext";
+import { taskService } from "../services/api";
 function Dashboard() {
   const [activeBoard, setActiveBoard] = useState();
   const [newBoard, setNewBoard] = useState();
-  const [board, setBoard] = useState({
-    board: null,
-    show: false,
-  });
+  const [boards, setBoards] = useState([]);
+
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) return;
+
+    const getBoards = async () => {
+      try {
+        const response = await taskService.getBoards();
+        setBoards(response.data);
+
+        if (response.data.length > 0) {
+          setActiveBoard(response.data[0]);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    getBoards();
+  }, [user, loading]);
 
   const handleCreateBoard = (e) => {
     e.preventDefault();
     setNewBoard(false);
   };
-  const { user } = useAuth();
+
   return (
     <>
       {newBoard && (
@@ -59,9 +79,9 @@ function Dashboard() {
             <Sidebar />
           </div>
 
-          {board.show ? (
+          {boards.length > 0 ? (
             <div className="flex-3 w-full h-screen overflow-hidden bg-slate-900 rounded-2xl shrink">
-              <Board />
+              <Board activeBoard={activeBoard} />
             </div>
           ) : (
             <div className="flex-1 w-full h-screen overflow-hidden flex items-center justify-center">
@@ -75,7 +95,7 @@ function Dashboard() {
             </div>
           )}
         </div>
-        <Nav />
+        <Nav boards={boards} setActiveBoard={setActiveBoard} />
       </div>
     </>
   );
