@@ -1,6 +1,9 @@
 import { ApiError } from "../../../util/ApiError.js";
 import { asyncHandler } from "../../../util/fetch.js";
-import { generateTokensAndSendResponse } from "../../../util/jwt.token.js";
+import {
+  generateTokensAndSendResponse,
+  verifyRefreshToken,
+} from "../../../util/jwt.token.js";
 import Team from "../models/user.model.js";
 import bcrypt from "bcrypt";
 export const registerUser = asyncHandler(async (req, res, next) => {

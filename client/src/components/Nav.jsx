@@ -1,8 +1,18 @@
-import { Calendar, Columns3, Inbox, LayoutDashboard } from "lucide-react";
-import React, { useState } from "react";
+import { Calendar, Columns3, Inbox, LayoutDashboard, Plus } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { boardService } from "../services/api";
+import { useBoard } from "../context/BoardContext";
 
-function Nav({ boards, setActiveBoard }) {
+function Nav({
+  setNewBoard,
+  setShowBoard,
+  setShowSidebar,
+  showSidebar,
+  showBoard,
+}) {
   const [menu, setMenu] = useState(false);
+
+  const { setActiveBoard, boards } = useBoard();
 
   return (
     <>
@@ -15,9 +25,18 @@ function Nav({ boards, setActiveBoard }) {
             className="w-full max-w-md max-h-[70vh] overflow-y-auto rounded-2xl bg-slate-900 border border-slate-700 p-4 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-white text-lg font-semibold mb-3">
-              Switch Boards
-            </h2>
+            <div className="flex justify-between">
+              <h2 className="text-white text-lg font-semibold mb-3">
+                Switch Boards
+              </h2>
+              <div
+                className="flex items-start text-white text-[10px]"
+                onClick={() => setNewBoard(true)}
+              >
+                <Plus size={16} />
+                <p>Create New Board</p>
+              </div>
+            </div>
 
             <div className="space-y-2">
               {boards.map((board) => (
@@ -44,7 +63,10 @@ bottom-[calc(100vh-91%)]
 -translate-x-1/2 z-100 bg-slate-800 p-2 rounded-xl "
       >
         <div className="flex gap-4">
-          <div className="bg-blue-700/50 text-cyan-400 flex items-center gap-1 text-sm rounded-2xl p-1">
+          <div
+            className={`${showSidebar ? "bg-blue-700/50 text-cyan-400" : "text-white"}  flex items-center gap-1 text-sm rounded-2xl p-1`}
+            onClick={() => setShowSidebar(!showSidebar)}
+          >
             <Inbox size={20} strokeWidth={1} />
             Inbox
           </div>
@@ -52,7 +74,10 @@ bottom-[calc(100vh-91%)]
             <Calendar size={20} strokeWidth={1} />
             Planner
           </div>
-          <div className="bg-blue-700/50 text-cyan-400 flex items-center gap-1 text-sm rounded-2xl p-1">
+          <div
+            className={`${showBoard ? "bg-blue-700/50 text-cyan-400" : "text-white"}  flex items-center gap-1 text-sm rounded-2xl p-1`}
+            onClick={() => setShowBoard(!showBoard)}
+          >
             <LayoutDashboard size={20} strokeWidth={1} />
             Board
           </div>

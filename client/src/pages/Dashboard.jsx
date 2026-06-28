@@ -4,36 +4,38 @@ import Sidebar from "../components/Sidebar";
 import Nav from "../components/Nav";
 import Board from "../components/Board";
 import { useAuth } from "../context/authContext";
-import { taskService } from "../services/api";
+import { useBoard } from "../context/BoardContext";
+import { Columns } from "lucide-react";
 function Dashboard() {
-  const [activeBoard, setActiveBoard] = useState();
   const [newBoard, setNewBoard] = useState();
-  const [boards, setBoards] = useState([]);
-
-  const { user, loading } = useAuth();
-
-  useEffect(() => {
-    if (loading) return;
-    if (!user) return;
-
-    const getBoards = async () => {
-      try {
-        const response = await taskService.getBoards();
-        setBoards(response.data);
-
-        if (response.data.length > 0) {
-          setActiveBoard(response.data[0]);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    getBoards();
-  }, [user, loading]);
-
-  const handleCreateBoard = (e) => {
+  const [showSidebar, setShowSidebar] = useState(true);
+  const [showBoard, setShowBoard] = useState(true);
+  const [data, setData] = useState({
+    title: "",
+  });
+  const {
+    activeBoard,
+    setActiveBoard,
+    boards,
+    setBoards,
+    createBoard,
+    loadingBoard,
+  } = useBoard();
+  const handleChange = (e) => {
+    setData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+  const handleCreateBoard = async (e) => {
     e.preventDefault();
+
+    await createBoard(data);
+
+    setData({
+      title: "",
+    });
+
     setNewBoard(false);
   };
 
@@ -55,37 +57,42 @@ function Dashboard() {
               <div>
                 <h1>Board Title</h1>
                 <label>Title</label>
-                <input type="text" />
+                <input
+                  autoFocus
+                  type="text"
+                  name="title"
+                  value={data.title}
+                  onChange={(e) => handleChange(e)}
+                />
               </div>
-              <div>
-                <h1>Columns</h1>
-                <label>Column title</label>
-                <input type="text" />
-              </div>
+
+              <button
+                className="max-w-md px-4  py-2 bg-indigo-500 rounded-2xl hover:bg-indigo-300"
+                type="submit"
+              >
+                Create Board
+              </button>
             </form>
-            <button
-              className="max-w-md px-4  py-2 bg-indigo-500 rounded-2xl hover:bg-indigo-300"
-              type="submit"
-            >
-              Create Board
-            </button>
           </div>
         </div>
       )}
       <div className="bg-gray-900 h-screen px-4 py-2 overflow-hidden relative">
         <Navbar />
         <div className="flex gap-3">
-          <div className="flex-2 md:flex-1 w-full resize-none">
+          <div
+            className={`${showSidebar ? "flex-2" : "hidden"} md:flex-1 w-full resize-none`}
+          >
             <Sidebar />
           </div>
 
           {boards.length > 0 ? (
-            <div className="flex-3 w-full h-screen overflow-hidden bg-slate-900 rounded-2xl shrink">
-              <Board activeBoard={activeBoard} />
+            <div
+              className={`${showBoard ? "flex-3" : "hidden"} w-full h-screen overflow-hidden bg-slate-900 rounded-2xl shrink`}
+            >
+              <Board setNewBoard={setNewBoard} />
             </div>
           ) : (
             <div className="flex-1 w-full h-screen overflow-hidden flex items-center justify-center">
-              l
               <button
                 className="text-3xl bg-indigo-400 p-2 rounded-xl mb-[20%] hover:bg-indigo-300 text-slate-100"
                 onClick={() => setNewBoard(true)}
@@ -95,7 +102,13 @@ function Dashboard() {
             </div>
           )}
         </div>
-        <Nav boards={boards} setActiveBoard={setActiveBoard} />
+        <Nav
+          setNewBoard={setNewBoard}
+          setShowBoard={setShowBoard}
+          setShowSidebar={setShowSidebar}
+          showSidebar={showSidebar}
+          showBoard={showBoard}
+        />
       </div>
     </>
   );

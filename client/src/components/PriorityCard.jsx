@@ -88,7 +88,7 @@ function PriorityCard({
         </div>
       )}
       <div
-        className="bg-black max-w-60 w-full p-2 rounded-xl text-white"
+        className="bg-black max-w-60 w-full p-2 rounded-xl text-white "
         ref={setNodeRef}
       >
         <div className="flex flex-col gap-2 ">

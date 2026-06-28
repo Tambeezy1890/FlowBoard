@@ -12,5 +12,5 @@ const authRoute = Router();
 authRoute.post("/login", loginUser);
 authRoute.post("/register", registerUser);
 authRoute.get("/user", protectMiddleware, getUser);
-authRoute.post("/generate-token", generateNewAccessToken);
+authRoute.post("/refresh-token", generateNewAccessToken);
 export default authRoute;

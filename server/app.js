@@ -5,10 +5,11 @@ import errorMiddleware from "./src/middleware/error.middleware.js";
 import authRoute from "./src/modules/auth/route/auth.route.js";
 import boardRoute from "./src/modules/boards/route/board.route.js";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 const app = express();
 
 app.use(express.json());
-
+app.use(cookieParser());
 app.use(
   cors({
     methods: ["GET", "POST", "PATCH", "DELETE"],

@@ -11,26 +11,33 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import AddColumn from "./AddColumn";
+import { useBoard } from "../context/BoardContext";
+import toast from "react-hot-toast";
 
-function Board({ activeBoard }) {
-  const initialColumns = [
-    { id: "today", title: "Today", tasks: [] },
-    { id: "week", title: "This Week", tasks: [] },
-    { id: "later", title: "Later", tasks: [] },
-  ];
+function Board({ setNewBoard }) {
   const [columns, setColumns] = useState([]);
+  const [menu, setMenu] = useState(false);
+
+  const { activeBoard, createColumn, deleteBoard } = useBoard();
+
   useEffect(() => {
     if (!activeBoard) return;
 
-    const formattedColumns = activeBoard.columns.map((column) => ({
-      id: column._id,
-      _id: column._id,
-      title: column.title,
-      order: column.order,
-      tasks: [],
-    }));
+    setColumns((prevColumns) => {
+      return (activeBoard.columns || []).map((column) => {
+        const existingColumn = prevColumns.find(
+          (prev) => prev._id === column._id
+        );
 
-    setColumns(formattedColumns);
+        return {
+          id: column._id,
+          _id: column._id,
+          title: column.title,
+          order: column.order,
+          tasks: existingColumn?.tasks || [],
+        };
+      });
+    });
   }, [activeBoard]);
 
   const findColumnId = (columns, id) => {
@@ -133,17 +140,22 @@ function Board({ activeBoard }) {
       )
     );
   };
-  const addColumn = (title) => {
+  const addColumn = async (title) => {
     if (!title.trim()) return;
+    if (!activeBoard?._id) return;
+    const order = activeBoard.columns?.length || 0;
 
-    setColumns((prev) => [
-      ...prev,
+    await createColumn(
       {
-        id: String(Date.now()),
-        title: title.trim(),
-        tasks: [],
+        columns: [
+          {
+            title: title.trim(),
+            order,
+          },
+        ],
       },
-    ]);
+      activeBoard._id
+    );
   };
 
   const updateTaskDescription = (columnId, taskId, description) => {
@@ -209,6 +221,9 @@ function Board({ activeBoard }) {
       )
     );
   };
+  const handleDelete = async () => {
+    const response = await deleteBoard(activeBoard._id);
+  };
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(TouchSensor),
@@ -217,42 +232,63 @@ function Board({ activeBoard }) {
     })
   );
   return (
-    <DndContext
-      onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
-      sensors={sensors}
-    >
-      <div
-        className="bg-linear-to-br
+    <>
+      {menu && (
+        <div
+          className="fixed inset-0 z-1000 bg-slate-900/60 flex justify-end items-start pt-4 pr-2 text-white"
+          onClick={() => setMenu(false)}
+        >
+          <div className="max-w-md w-full bg-indigo-600 p-2 flex rounded-xl flex-col">
+            <h1>Options</h1>
+            <ul className="bg-slate-500/30 p-2 rounded-sm shadow-inner">
+              <li className="my-2" onClick={() => handleDelete()}>
+                Delete Board
+              </li>
+              <li className="my-2" onClick={() => setNewBoard(true)}>
+                Create New Board
+              </li>
+              <li className="my-2">Update Board</li>
+            </ul>
+          </div>
+        </div>
+      )}
+      <DndContext
+        onDragEnd={handleDragEnd}
+        onDragOver={handleDragOver}
+        sensors={sensors}
+      >
+        <div
+          className="bg-linear-to-br
 from-violet-500
 via-purple-500
 to-fuchsia-400  h-[calc(100vh-100px)] rounded-2xl border-slate-400 scrollbar-thin   "
-      >
-        <div className="sticky top-0">
-          <DashboardHeader />
-        </div>
-        <div className="overflow-x-auto overflow-y-auto px-2 h-[calc(100%-140px)]">
-          <div className="flex gap-4 items-start">
-            {columns.map((card) => (
-              <PriorityCard
-                key={card.id}
-                column={card}
-                addTask={addTask}
-                count={card.tasks?.length}
-                title={card.title}
-                updateTaskDescription={updateTaskDescription}
-                columnId={card.id}
-                updateTitle={updateTitle}
-                deleteTask={deleteTask}
-                deleteColumn={deleteColumn}
-                updateColumnTitle={updateColumnTitle}
-              />
-            ))}
-            <AddColumn addColumn={addColumn} />
+        >
+          <div className="sticky top-0">
+            <DashboardHeader setMenu={setMenu} />
+          </div>
+          <div className="overflow-x-auto overflow-y-auto px-2 h-[calc(100%-140px)]">
+            <div className="flex gap-4 items-start">
+              {columns.map((card) => (
+                <PriorityCard
+                  key={card.id}
+                  column={card}
+                  addTask={addTask}
+                  count={card.tasks?.length}
+                  title={card.title}
+                  updateTaskDescription={updateTaskDescription}
+                  columnId={card.id}
+                  updateTitle={updateTitle}
+                  deleteTask={deleteTask}
+                  deleteColumn={deleteColumn}
+                  updateColumnTitle={updateColumnTitle}
+                />
+              ))}
+              <AddColumn addColumn={addColumn} />
+            </div>
           </div>
         </div>
-      </div>
-    </DndContext>
+      </DndContext>
+    </>
   );
 }
 
