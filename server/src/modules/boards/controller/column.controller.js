@@ -35,7 +35,6 @@ export const updateColumn = asyncHandler(async (req, res) => {
 });
 export const deleteColumn = asyncHandler(async (req, res, next) => {
   const { boardId, columnId } = req.params;
-  const { title, order } = req.body;
   const deletedColumn = await Board.findOneAndUpdate(
     {
       _id: boardId,

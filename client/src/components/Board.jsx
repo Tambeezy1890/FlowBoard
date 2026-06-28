@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { act, useEffect, useState } from "react";
 import DashboardHeader from "./DashboardHeader";
 import PriorityCard from "./PriorityCard";
 import {
@@ -13,15 +13,30 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import AddColumn from "./AddColumn";
 import { useBoard } from "../context/BoardContext";
 import toast from "react-hot-toast";
+import { useTask } from "../context/TaskContext";
+import EditTasks from "../pages/EditTasks";
 
 function Board({ setNewBoard }) {
   const [columns, setColumns] = useState([]);
   const [menu, setMenu] = useState(false);
+  const [editModal, setEditModal] = useState({
+    show: false,
+    task: null,
+  });
 
-  const { activeBoard, createColumn, deleteBoard } = useBoard();
-
+  const {
+    activeBoard,
+    createColumn,
+    deleteBoard,
+    deleteColumn,
+    updateColumn,
+    boards,
+  } = useBoard();
+  const { createTask, tasks, deleteTask } = useTask();
   useEffect(() => {
     if (!activeBoard) return;
+
+    const taskList = tasks || [];
 
     setColumns((prevColumns) => {
       return (activeBoard.columns || []).map((column) => {
@@ -29,16 +44,28 @@ function Board({ setNewBoard }) {
           (prev) => prev._id === column._id
         );
 
+        const columnTasks = taskList
+          .filter((task) => task.column === column._id)
+          .map((task) => ({
+            id: task._id,
+            _id: task._id,
+            title: task.title,
+            description: task.description,
+            completed: task.completed,
+            order: task.order,
+            column: task.column,
+          }));
+
         return {
           id: column._id,
           _id: column._id,
           title: column.title,
           order: column.order,
-          tasks: existingColumn?.tasks || [],
+          tasks: columnTasks.length ? columnTasks : existingColumn?.tasks || [],
         };
       });
     });
-  }, [activeBoard]);
+  }, [activeBoard, tasks]);
 
   const findColumnId = (columns, id) => {
     if (columns.some((column) => column.id === id)) return id;
@@ -119,7 +146,13 @@ function Board({ setNewBoard }) {
     });
   };
 
-  const addTask = (columnId, taskTitle) => {
+  const addTask = async (columnId, taskTitle) => {
+    const cols = columns.find((col) => col.id === columnId);
+    await createTask(activeBoard._id, {
+      title: taskTitle,
+      column: columnId,
+      order: cols.order,
+    });
     if (!taskTitle.trim()) return;
 
     setColumns((prev) =>
@@ -130,7 +163,6 @@ function Board({ setNewBoard }) {
               tasks: [
                 ...column.tasks,
                 {
-                  id: String(Date.now()),
                   title: taskTitle.trim(),
                   description: "",
                 },
@@ -191,8 +223,8 @@ function Board({ setNewBoard }) {
       )
     );
   };
-  const deleteTask = (columnId, taskId) => {
-    console.log(taskId);
+  const handleDeleteTask = async (columnId, taskId) => {
+    await deleteTask(activeBoard._id, taskId);
     setColumns((prev) =>
       prev.map((column) =>
         column.id === columnId
@@ -204,24 +236,25 @@ function Board({ setNewBoard }) {
       )
     );
   };
-  const deleteColumn = (columnId) => {
+  const handleDeleteColumn = async (columnId) => {
+    await deleteColumn(columnId, activeBoard._id);
     setColumns((prev) => prev.filter((column) => column.id !== columnId));
   };
-  const updateColumnTitle = (columnId, newTitle) => {
+
+  const updateColumnTitle = async (columnId, newTitle) => {
     if (!newTitle.trim()) return;
+
+    await updateColumn(activeBoard._id, columnId, {
+      title: newTitle.trim(),
+    });
 
     setColumns((prev) =>
       prev.map((column) =>
-        column.id === columnId
-          ? {
-              ...column,
-              title: newTitle,
-            }
-          : column
+        column.id === columnId ? { ...column, title: newTitle.trim() } : column
       )
     );
   };
-  const handleDelete = async () => {
+  const handleDeleteBoard = async () => {
     const response = await deleteBoard(activeBoard._id);
   };
   const sensors = useSensors(
@@ -233,6 +266,29 @@ function Board({ setNewBoard }) {
   );
   return (
     <>
+      {editModal.show && (
+        <div
+          className="w-full fixed min-h-screen flex items-center justify-center bg-black/60  inset-0 backdrop-blur-[2px] z-1000"
+          onClick={() => {
+            setEditModal({
+              show: false,
+              task: null,
+            });
+          }}
+        >
+          <div className="p-6 w-full " onClick={(e) => e.stopPropagation()}>
+            <EditTasks
+              task={editModal.task}
+              title={editModal.task.title}
+              updateTaskDescription={updateTaskDescription}
+              columnId={editModal.task.column}
+              updateTitle={updateTitle}
+              deleteTask={handleDeleteTask}
+              setEditModal={setEditModal}
+            />
+          </div>
+        </div>
+      )}
       {menu && (
         <div
           className="fixed inset-0 z-1000 bg-slate-900/60 flex justify-end items-start pt-4 pr-2 text-white"
@@ -241,13 +297,14 @@ function Board({ setNewBoard }) {
           <div className="max-w-md w-full bg-indigo-600 p-2 flex rounded-xl flex-col">
             <h1>Options</h1>
             <ul className="bg-slate-500/30 p-2 rounded-sm shadow-inner">
-              <li className="my-2" onClick={() => handleDelete()}>
+              <li className="my-2" onClick={() => handleDeleteBoard()}>
                 Delete Board
               </li>
               <li className="my-2" onClick={() => setNewBoard(true)}>
                 Create New Board
               </li>
               <li className="my-2">Update Board</li>
+              <li className="my-2">Delete Columns</li>
             </ul>
           </div>
         </div>
@@ -270,6 +327,8 @@ to-fuchsia-400  h-[calc(100vh-100px)] rounded-2xl border-slate-400 scrollbar-thi
             <div className="flex gap-4 items-start">
               {columns.map((card) => (
                 <PriorityCard
+                  setEditModal={setEditModal}
+                  editModal={editModal}
                   key={card.id}
                   column={card}
                   addTask={addTask}
@@ -278,8 +337,8 @@ to-fuchsia-400  h-[calc(100vh-100px)] rounded-2xl border-slate-400 scrollbar-thi
                   updateTaskDescription={updateTaskDescription}
                   columnId={card.id}
                   updateTitle={updateTitle}
-                  deleteTask={deleteTask}
-                  deleteColumn={deleteColumn}
+                  deleteTask={handleDeleteTask}
+                  deleteColumn={handleDeleteColumn}
                   updateColumnTitle={updateColumnTitle}
                 />
               ))}

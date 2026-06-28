@@ -20,6 +20,8 @@ function PriorityCard({
   deleteTask,
   deleteColumn,
   updateColumnTitle,
+  editModal,
+  setEditModal,
 }) {
   const [card, setCard] = useState("");
   const [showMenu, setShowMenu] = useState(false);
@@ -37,14 +39,8 @@ function PriorityCard({
       ...prev,
       title: newTitle,
     }));
-
-    updateColumnTitle(column.id, newTitle);
   };
 
-  const [editModal, setEditModal] = useState({
-    show: false,
-    task: null,
-  });
   const { setNodeRef } = useDroppable({
     id: column.id,
   });
@@ -63,30 +59,7 @@ function PriorityCard({
           </div>
         </div>
       )}
-      {editModal.show && (
-        <div
-          className="w-full fixed min-h-screen flex items-center justify-center bg-black/60  inset-0 backdrop-blur-[2px]"
-          onClick={() => {
-            setEditModal({
-              show: false,
-              task: null,
-            });
-            setShowMenu(false);
-          }}
-        >
-          <div className="p-6 w-full " onClick={(e) => e.stopPropagation()}>
-            <EditTasks
-              task={editModal.task}
-              title={title}
-              updateTaskDescription={updateTaskDescription}
-              columnId={columnId}
-              updateTitle={updateTitle}
-              deleteTask={deleteTask}
-              setEditModal={setEditModal}
-            />
-          </div>
-        </div>
-      )}
+
       <div
         className="bg-black max-w-60 w-full p-2 rounded-xl text-white "
         ref={setNodeRef}
@@ -120,6 +93,7 @@ function PriorityCard({
                         edit: false,
                         title: column.title,
                       });
+                      updateColumnTitle(column.id, editTitle.title);
                     }
                   }}
                 />

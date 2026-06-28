@@ -109,6 +109,32 @@ export const BoardProvider = ({ children }) => {
       console.error(err);
     }
   };
+  const deleteColumn = async (columnId, boardId) => {
+    try {
+      const response = await boardService.deleteColumn(columnId, boardId);
+      toast.success("Column deleted");
+      return response;
+    } catch (err) {
+      const message = err.response?.data?.message || "Failed to delete column";
+      toast.error(message);
+    }
+  };
+  const updateColumn = async (boardId, columnId, columnData) => {
+    try {
+      const response = await boardService.updateColumn(
+        boardId,
+        columnId,
+        columnData
+      );
+
+      toast.success("Column updated");
+      return response;
+    } catch (err) {
+      const message = err.response?.data?.message || "Failed to update column";
+      toast.error(message);
+    }
+  };
+
   const value = {
     loadingBoard,
     activeBoard,
@@ -118,6 +144,8 @@ export const BoardProvider = ({ children }) => {
     createBoard,
     createColumn,
     deleteBoard,
+    deleteColumn,
+    updateColumn,
   };
   return (
     <BoardContext.Provider value={value}>{children}</BoardContext.Provider>

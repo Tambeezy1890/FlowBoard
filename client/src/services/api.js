@@ -95,6 +95,14 @@ export const boardService = {
       console.error(err);
     }
   },
+  deleteBoard: async (boardId) => {
+    try {
+      const response = await api.delete(`/api/v1/boards/${boardId}`);
+      return response.data;
+    } catch (err) {
+      console.error(err);
+    }
+  },
   createColumn: async (columns, boardId) => {
     try {
       const response = await api.post(
@@ -106,21 +114,41 @@ export const boardService = {
       console.error(err);
     }
   },
-  deleteBoard: async (boardId) => {
-    try {
-      const response = await api.delete(`/api/v1/boards/${boardId}`);
-      return response.data;
-    } catch (err) {
-      console.error(err);
-    }
+  updateColumn: async (boardId, columnId, columnData) => {
+    const response = await api.patch(
+      `/api/v1/boards/${boardId}/columns/${columnId}`,
+      columnData
+    );
+    return response.data;
+  },
+  deleteColumn: async (columnId, boardId) => {
+    const response = await api.delete(
+      `/api/v1/boards/${boardId}/columns/${columnId}`
+    );
+    return response.data;
   },
 };
 
 export const taskService = {
-  createTask: async () => {
-    try {
-    } catch (err) {
-      console.error(err);
-    }
+  createTask: async (boardId, taskData) => {
+    const response = await api.post(
+      `/api/v1/boards/${boardId}/tasks`,
+      taskData
+    );
+    return response.data;
+  },
+  getTasks: async (boardId) => {
+    const response = await api.get(`/api/v1/boards/${boardId}/tasks`);
+    return response.data;
+  },
+  getTask: async (boardId, taskId) => {
+    const response = await api.get(`/api/v1/boards/${boardId}/tasks/${taskId}`);
+    return response.data;
+  },
+  deleteTask: async (boardId, taskId) => {
+    const response = await api.delete(
+      `/api/v1/boards/${boardId}/tasks/${taskId}`
+    );
+    return response.data;
   },
 };
