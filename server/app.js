@@ -10,20 +10,26 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-const allowedRoutes = ["http://localhost:5173", process.env.CLIENT_URL];
+const allowedRoutes = [
+  "http://localhost:5173",
+  "https://flow-board-lemon.vercel.app",
+];
 app.use(
   cors({
-    methods: ["GET", "POST", "PATCH", "DELETE"],
-    origin: (origin, callback) => {
-      if (!origin || allowedRoutes.includes(origin)) {
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      callback(new Error("Not allowed by CORS"));
+      return callback(new Error(`CORS blocked: ${origin}`));
     },
     credentials: true,
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.options("*", cors());
 app.get("/", (req, res) => {
   res.send("Server is live");
 });
