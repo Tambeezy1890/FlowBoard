@@ -1,5 +1,5 @@
 import { Ellipsis, Minimize2, Plus, StickyNotePlus } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Task from "./Task";
 import EditTasks from "../pages/EditTasks";
 import { useDroppable } from "@dnd-kit/core";
@@ -8,19 +8,19 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import DropdownMenu from "./DropdownMenu";
+import { useDebounce } from "../hooks/useDebounce";
 
 function PriorityCard({
   column,
   addTask,
   count,
   title,
-  updateTaskDescription,
   columnId,
-  updateTitle,
   deleteTask,
   deleteColumn,
   updateColumnTitle,
   editModal,
+  updateTaskStatus,
   setEditModal,
 }) {
   const [card, setCard] = useState("");
@@ -29,18 +29,48 @@ function PriorityCard({
     edit: false,
     title: column.title,
   });
-  const handleChange = (e) => {
+  const hasUserTyped = useRef(false);
+  const debouncedValue = useDebounce(editTitle.title, 5000);
+
+  useEffect(() => {
+    if (!hasUserTyped.current) return;
+    if (!debouncedValue.trim()) return;
+    if (debouncedValue.trim() === column.title) return;
+
+    updateColumnTitle(column.id, debouncedValue.trim());
+  }, [debouncedValue]);
+  const saveColumnTitle = () => {
+    const cleanTitle = editTitle.title.trim();
+
+    if (!cleanTitle) {
+      setEditTitle({
+        edit: false,
+        title: column.title,
+      });
+      return;
+    }
+
+    if (cleanTitle !== column.title) {
+      updateColumnTitle(column.id, cleanTitle);
+    }
+
+    setEditTitle({
+      edit: false,
+      title: cleanTitle,
+    });
+  };
+  const handleCardChange = (e) => {
     setCard(e.target.value);
   };
+
   const handleTitleChange = (e) => {
-    const newTitle = e.target.value;
+    hasUserTyped.current = true;
 
     setEditTitle((prev) => ({
       ...prev,
-      title: newTitle,
+      title: e.target.value,
     }));
   };
-
   const { setNodeRef } = useDroppable({
     id: column.id,
   });
@@ -81,19 +111,17 @@ function PriorityCard({
                   value={editTitle.title}
                   className="w-full bg-slate-800 text-white outline-none rounded px-1"
                   onChange={handleTitleChange}
-                  onBlur={() =>
-                    setEditTitle({
-                      edit: false,
-                      title: column.title,
-                    })
-                  }
+                  onBlur={saveColumnTitle}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
+                      saveColumnTitle();
+                    }
+
+                    if (e.key === "Escape") {
                       setEditTitle({
                         edit: false,
                         title: column.title,
                       });
-                      updateColumnTitle(column.id, editTitle.title);
                     }
                   }}
                 />
@@ -119,6 +147,7 @@ function PriorityCard({
                 task={task}
                 columnId={columnId}
                 setEditModal={setEditModal}
+                updateTaskStatus={updateTaskStatus}
               />
             ))}
           </SortableContext>
@@ -137,7 +166,7 @@ function PriorityCard({
                 type="text"
                 placeholder="Add a card"
                 value={card}
-                onChange={(e) => handleChange(e)}
+                onChange={handleCardChange}
               />
             </form>
 

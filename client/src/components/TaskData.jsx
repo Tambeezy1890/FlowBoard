@@ -9,30 +9,55 @@ import {
   Tag,
   Trash2,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Members from "./Members";
 import Description from "./Description";
+import { useDebounce } from "../hooks/useDebounce";
 
 function TaskData({
   task,
-
+  updateTaskStatus,
   title,
   updateTaskDescription,
   columnId,
   updateTitle,
 }) {
-  const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(task.title);
-  const handleChange = (e) => {
-    setValue(e.target.value);
-    updateTitle(columnId, task.id, e.target.value);
+  const debouncedTitle = useDebounce(value, 5000);
+  const hasUserTyped = useRef(false);
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    if (!hasUserTyped.current) return;
+    if (!debouncedTitle.trim()) return;
+
+    updateTitle(columnId, task.id, debouncedTitle);
+  }, [debouncedTitle]);
+  const saveTitle = () => {
+    const cleanTitle = value.trim();
+
+    setEditing(false);
+
+    if (!cleanTitle) {
+      setValue(task.title);
+      return;
+    }
+
+    if (cleanTitle === task.title) return;
+
+    updateTitle(columnId, task.id, cleanTitle);
   };
 
   return (
     <div className="flex flex-col">
       <div className="flex items-center">
-        <div className="w-4 h-4 bg-emerald-400 flex items-center justify-center rounded-full mr-2">
-          <Check size={20} />
+        <div
+          className={`w-4 h-4 ${task.completed ? "bg-emerald-400" : "bg-slate-400"} flex items-center justify-center rounded-full mr-2`}
+        >
+          <Check
+            size={20}
+            onClick={() => updateTaskStatus(columnId, task.id, !task.completed)}
+          />
         </div>
         <div className="" onClick={() => setEditing(true)}>
           {editing ? (
@@ -40,7 +65,11 @@ function TaskData({
               autoFocus
               type="text"
               value={value}
-              onChange={(e) => handleChange(e)}
+              onChange={(e) => {
+                hasUserTyped.current = true;
+                setValue(e.target.value);
+              }}
+              onBlur={saveTitle}
             />
           ) : (
             <h1 className="text-2xl text-slate-300 ">{task.title}</h1>

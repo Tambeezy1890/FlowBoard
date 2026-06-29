@@ -30,25 +30,31 @@ api.interceptors.response.use(
     );
 
     if (isRefreshRoute) {
-      localStorage.clear();
+      localStorage.removeItem("access-token");
+      localStorage.removeItem("User");
       return Promise.reject(error);
     }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+      try {
+        originalRequest._retry = true;
 
-      const refreshResponse = await api.post("/api/v1/auth/refresh-token");
+        const refreshResponse = await api.post("/api/v1/auth/refresh-token");
 
-      const newAccessToken = refreshResponse.data.accessToken;
+        const newAccessToken = refreshResponse.data.accessToken;
 
-      localStorage.setItem("access-token", newAccessToken);
+        localStorage.setItem("access-token", newAccessToken);
 
-      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
-      return api(originalRequest);
+        return api(originalRequest);
+      } catch (refreshError) {
+        localStorage.removeItem("access-token");
+        localStorage.removeItem("User");
+        return Promise.reject(refreshError);
+      }
     }
 
-    localStorage.clear();
     return Promise.reject(error);
   }
 );
@@ -148,6 +154,13 @@ export const taskService = {
   deleteTask: async (boardId, taskId) => {
     const response = await api.delete(
       `/api/v1/boards/${boardId}/tasks/${taskId}`
+    );
+    return response.data;
+  },
+  updateTask: async (boardId, taskId, taskData) => {
+    const response = await api.patch(
+      `/api/v1/boards/${boardId}/tasks/${taskId}`,
+      taskData
     );
     return response.data;
   },

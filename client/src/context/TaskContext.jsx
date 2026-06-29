@@ -46,6 +46,23 @@ export const TaskProvider = ({ children }) => {
       toast.error(message);
     }
   };
-  const value = { tasks, createTask, deleteTask };
+  const updateTask = async (boardId, taskId, taskData) => {
+    try {
+      const response = await taskService.updateTask(boardId, taskId, taskData);
+      const updatedTask = response.data;
+
+      setTasks((prev) =>
+        prev.map((task) => (task._id === taskId ? updatedTask : task))
+      );
+
+      toast.success("Task updated");
+      return updatedTask;
+    } catch (err) {
+      const message = err.response?.data?.message || "Failed to create a task";
+      toast.error(message);
+    }
+  };
+
+  const value = { tasks, createTask, deleteTask, updateTask };
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;
 };

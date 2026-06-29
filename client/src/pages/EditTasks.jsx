@@ -9,6 +9,7 @@ function EditTasks({
   deleteTask,
   title,
   updateTaskDescription,
+  updateTaskStatus,
   columnId,
   updateTitle,
   setEditModal,
@@ -25,6 +26,7 @@ function EditTasks({
           updateTaskDescription={updateTaskDescription}
           deleteTask={deleteTask}
           columnId={columnId}
+          updateTaskStatus={updateTaskStatus}
         />
       </div>
       <div className="absolute right-5 bottom-5 text-white hover:bg-rose-100 hover:text-rose-500 rounded-2xl transition-colors">

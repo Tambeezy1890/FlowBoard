@@ -32,7 +32,7 @@ function Board({ setNewBoard }) {
     updateColumn,
     boards,
   } = useBoard();
-  const { createTask, tasks, deleteTask } = useTask();
+  const { createTask, tasks, deleteTask, updateTask } = useTask();
   useEffect(() => {
     if (!activeBoard) return;
 
@@ -147,30 +147,15 @@ function Board({ setNewBoard }) {
   };
 
   const addTask = async (columnId, taskTitle) => {
+    if (!taskTitle.trim()) return;
+
     const cols = columns.find((col) => col.id === columnId);
+
     await createTask(activeBoard._id, {
-      title: taskTitle,
+      title: taskTitle.trim(),
       column: columnId,
       order: cols.order,
     });
-    if (!taskTitle.trim()) return;
-
-    setColumns((prev) =>
-      prev.map((column) =>
-        column.id === columnId
-          ? {
-              ...column,
-              tasks: [
-                ...column.tasks,
-                {
-                  title: taskTitle.trim(),
-                  description: "",
-                },
-              ],
-            }
-          : column
-      )
-    );
   };
   const addColumn = async (title) => {
     if (!title.trim()) return;
@@ -190,7 +175,22 @@ function Board({ setNewBoard }) {
     );
   };
 
-  const updateTaskDescription = (columnId, taskId, description) => {
+  const updateTaskDescription = async (columnId, taskId, description) => {
+    await updateTask(activeBoard._id, taskId, {
+      column: columnId,
+      description: description,
+    });
+    setEditModal((prev) =>
+      prev.task?.id === taskId
+        ? {
+            ...prev,
+            task: {
+              ...prev.task,
+              description,
+            },
+          }
+        : prev
+    );
     setColumns((prev) =>
       prev.map((column) =>
         column.id === columnId
@@ -209,7 +209,56 @@ function Board({ setNewBoard }) {
       )
     );
   };
-  const updateTitle = (columnId, taskId, newTitle) => {
+  const updateTaskStatus = async (columnId, taskId, completed) => {
+    await updateTask(activeBoard._id, taskId, {
+      column: columnId,
+      completed: completed,
+    });
+    setEditModal((prev) =>
+      prev.task?.id === taskId
+        ? {
+            ...prev,
+            task: {
+              ...prev.task,
+              completed,
+            },
+          }
+        : prev
+    );
+    setColumns((prev) =>
+      prev.map((column) =>
+        column.id === columnId
+          ? {
+              ...column,
+              tasks: column.tasks.map((task) =>
+                task.id === taskId
+                  ? {
+                      ...task,
+                      completed,
+                    }
+                  : task
+              ),
+            }
+          : column
+      )
+    );
+  };
+  const updateTaskTitle = async (columnId, taskId, newTitle) => {
+    await updateTask(activeBoard._id, taskId, {
+      column: columnId,
+      title: newTitle,
+    });
+    setEditModal((prev) =>
+      prev.task?.id === taskId
+        ? {
+            ...prev,
+            task: {
+              ...prev.task,
+              title: newTitle,
+            },
+          }
+        : prev
+    );
     setColumns((prev) =>
       prev.map((column) =>
         column.id === columnId
@@ -282,9 +331,10 @@ function Board({ setNewBoard }) {
               title={editModal.task.title}
               updateTaskDescription={updateTaskDescription}
               columnId={editModal.task.column}
-              updateTitle={updateTitle}
+              updateTitle={updateTaskTitle}
               deleteTask={handleDeleteTask}
               setEditModal={setEditModal}
+              updateTaskStatus={updateTaskStatus}
             />
           </div>
         </div>
@@ -334,12 +384,11 @@ to-fuchsia-400  h-[calc(100vh-100px)] rounded-2xl border-slate-400 scrollbar-thi
                   addTask={addTask}
                   count={card.tasks?.length}
                   title={card.title}
-                  updateTaskDescription={updateTaskDescription}
                   columnId={card.id}
-                  updateTitle={updateTitle}
                   deleteTask={handleDeleteTask}
                   deleteColumn={handleDeleteColumn}
                   updateColumnTitle={updateColumnTitle}
+                  updateTaskStatus={updateTaskStatus}
                 />
               ))}
               <AddColumn addColumn={addColumn} />

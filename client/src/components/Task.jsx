@@ -1,10 +1,10 @@
 import { Check, Eye, Trash2 } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-function Task({ task, columnId, setEditModal }) {
+function Task({ task, columnId, setEditModal, updateTaskStatus }) {
   const {
     attributes,
     listeners,
@@ -23,9 +23,15 @@ function Task({ task, columnId, setEditModal }) {
   return (
     <div className="bg-slate-700 p-2 mb-2" ref={setNodeRef} style={style}>
       <div className="flex items-center gap-2 mb-2 justify-between">
-        <div className="flex gap-2 items-center">
-          <Check className="bg-emerald-300 rounded-full" size={18} />
-          <p>{task.title}</p>
+        <div className="flex gap-2 items-center ">
+          <Check
+            className={`${task.completed ? "bg-emerald-300" : "bg-slate-400"} rounded-full`}
+            onClick={() => updateTaskStatus(columnId, task.id, !task.completed)}
+            size={18}
+          />
+          <div className="max-w-38  overflow-auto scrollbar-none">
+            <p className="text-nowrap">{task.title}</p>
+          </div>
         </div>
 
         <button
