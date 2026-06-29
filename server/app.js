@@ -8,8 +8,6 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 const app = express();
 
-app.use(express.json());
-app.use(cookieParser());
 const allowedOrigins = [
   "http://localhost:5173",
   "https://flow-board-lemon.vercel.app",
@@ -30,6 +28,8 @@ app.use(
 );
 
 app.options("*", cors());
+app.use(express.json());
+app.use(cookieParser());
 app.get("/", (req, res) => {
   res.send("Server is live");
 });
