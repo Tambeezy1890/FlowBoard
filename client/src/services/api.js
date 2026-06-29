@@ -1,7 +1,10 @@
 import axios from "axios";
+const baseURL = import.meta.env.DEV
+  ? "http://localhost:5050"
+  : "https://flowboard-production-4eff.up.railway.app";
 
 const api = axios.create({
-  baseURL: "http://localhost:5050",
+  baseURL,
   withCredentials: true,
 });
 
