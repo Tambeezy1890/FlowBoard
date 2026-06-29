@@ -62,7 +62,31 @@ export const TaskProvider = ({ children }) => {
       toast.error(message);
     }
   };
+  const moveTask = async (boardId, taskId, taskData) => {
+    try {
+      const response = await taskService.moveTask(boardId, taskId, taskData);
+      const updatedTask = response.data;
 
-  const value = { tasks, createTask, deleteTask, updateTask };
+      setTasks((prev) =>
+        prev.map((task) =>
+          task._id === taskId
+            ? {
+                ...task,
+                ...updatedTask,
+                column: taskData.column,
+                order: taskData.order,
+              }
+            : task
+        )
+      );
+
+      toast.success("Task moved");
+      return response.data;
+    } catch (err) {
+      const message = err.response?.data?.message || "Failed to move task";
+      toast.error(message);
+    }
+  };
+  const value = { tasks, createTask, deleteTask, updateTask, moveTask };
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;
 };

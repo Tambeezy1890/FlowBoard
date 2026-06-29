@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function AddColumn({ addColumn }) {
+function AddColumnForm({ addColumn }) {
   const [title, setTitle] = useState("");
 
   return (
@@ -22,4 +22,4 @@ function AddColumn({ addColumn }) {
   );
 }
 
-export default AddColumn;
+export default AddColumnForm;

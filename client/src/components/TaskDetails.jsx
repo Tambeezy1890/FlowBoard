@@ -11,10 +11,11 @@ import {
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import Members from "./Members";
-import Description from "./Description";
-import { useDebounce } from "../hooks/useDebounce";
 
-function TaskData({
+import { useDebounce } from "../hooks/useDebounce";
+import TaskDescription from "./TaskDescription";
+
+function TaskDetails({
   task,
   updateTaskStatus,
   title,
@@ -99,7 +100,7 @@ function TaskData({
         </div>
       </div>
       <Members />
-      <Description
+      <TaskDescription
         task={task}
         columnId={columnId}
         updateTaskDescription={updateTaskDescription}
@@ -108,4 +109,4 @@ function TaskData({
   );
 }
 
-export default TaskData;
+export default TaskDetails;

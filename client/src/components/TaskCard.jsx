@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-function Task({ task, columnId, setEditModal, updateTaskStatus }) {
+function TaskCard({ task, columnId, setEditModal, updateTaskStatus }) {
   const {
     attributes,
     listeners,
@@ -63,4 +63,4 @@ function Task({ task, columnId, setEditModal, updateTaskStatus }) {
   );
 }
 
-export default Task;
+export default TaskCard;

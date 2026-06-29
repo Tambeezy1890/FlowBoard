@@ -1,6 +1,6 @@
 import React, { act, useEffect, useState } from "react";
 import DashboardHeader from "./DashboardHeader";
-import PriorityCard from "./PriorityCard";
+import BoardColumn from "./BoardColumn";
 import {
   DndContext,
   KeyboardSensor,
@@ -10,20 +10,20 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import AddColumn from "./AddColumn";
+
 import { useBoard } from "../context/BoardContext";
 import toast from "react-hot-toast";
 import { useTask } from "../context/TaskContext";
-import EditTasks from "../pages/EditTasks";
+import TaskModal from "../pages/TaskModal";
+import AddColumnForm from "./AddColumnForm";
+import { useTaskModal } from "../hooks/useTaskModal";
 
 function Board({ setNewBoard }) {
   const [columns, setColumns] = useState([]);
   const [menu, setMenu] = useState(false);
-  const [editModal, setEditModal] = useState({
-    show: false,
-    task: null,
-  });
-
+  const [dragStartColumnId, setDragStartColumnId] = useState(null);
+  const { editModal, setEditModal, closeTaskModal, updateModalTask } =
+    useTaskModal();
   const {
     activeBoard,
     createColumn,
@@ -32,7 +32,7 @@ function Board({ setNewBoard }) {
     updateColumn,
     boards,
   } = useBoard();
-  const { createTask, tasks, deleteTask, updateTask } = useTask();
+  const { createTask, tasks, deleteTask, updateTask, moveTask } = useTask();
   useEffect(() => {
     if (!activeBoard) return;
 
@@ -61,7 +61,7 @@ function Board({ setNewBoard }) {
           _id: column._id,
           title: column.title,
           order: column.order,
-          tasks: columnTasks.length ? columnTasks : existingColumn?.tasks || [],
+          tasks: columnTasks.sort((a, b) => a.order - b.order),
         };
       });
     });
@@ -106,7 +106,13 @@ function Board({ setNewBoard }) {
         if (column.id === targetColumnId) {
           return {
             ...column,
-            tasks: [...targetColumn.tasks, activeTask],
+            tasks: [
+              ...targetColumn.tasks,
+              {
+                ...activeTask,
+                column: targetColumnId,
+              },
+            ],
           };
         }
 
@@ -114,36 +120,61 @@ function Board({ setNewBoard }) {
       });
     });
   };
+  const handleDragStart = ({ active }) => {
+    const startColumnId = findColumnId(columns, active.id);
+    setDragStartColumnId(startColumnId);
+  };
 
-  const handleDragEnd = ({ active, over }) => {
+  const handleDragEnd = async ({ active, over }) => {
     if (!over) return;
 
     const activeId = active.id;
     const overId = over.id;
 
-    setColumns((prev) => {
-      const activeColumnId = findColumnId(prev, activeId);
-      const overColumnId = findColumnId(prev, overId);
+    const startColumnId = dragStartColumnId;
+    const finalColumnId = findColumnId(columns, activeId);
 
-      if (!activeColumnId || !overColumnId) return prev;
-      if (activeColumnId !== overColumnId) return prev;
+    if (!startColumnId || !finalColumnId) return;
 
-      const column = prev.find((col) => col.id === activeColumnId);
+    // same column reorder
+    if (startColumnId === finalColumnId) {
+      const column = columns.find((col) => col.id === finalColumnId);
 
       const oldIndex = column.tasks.findIndex((task) => task.id === activeId);
       const newIndex = column.tasks.findIndex((task) => task.id === overId);
 
-      if (oldIndex === newIndex) return prev;
+      if (oldIndex === newIndex) return;
 
-      return prev.map((col) =>
-        col.id === activeColumnId
-          ? {
-              ...col,
-              tasks: arrayMove(col.tasks, oldIndex, newIndex),
-            }
-          : col
+      const reorderedTasks = arrayMove(column.tasks, oldIndex, newIndex);
+
+      setColumns((prev) =>
+        prev.map((col) =>
+          col.id === finalColumnId ? { ...col, tasks: reorderedTasks } : col
+        )
       );
+
+      await moveTask(activeBoard._id, activeId, {
+        column: finalColumnId,
+        order: newIndex,
+      });
+
+      setDragStartColumnId(null);
+      return;
+    }
+
+    // different column move
+    const finalColumn = columns.find((col) => col.id === finalColumnId);
+
+    const finalIndex = finalColumn.tasks.findIndex(
+      (task) => task.id === activeId
+    );
+
+    await moveTask(activeBoard._id, activeId, {
+      column: finalColumnId,
+      order: finalIndex === -1 ? finalColumn.tasks.length : finalIndex,
     });
+
+    setDragStartColumnId(null);
   };
 
   const addTask = async (columnId, taskTitle) => {
@@ -180,17 +211,7 @@ function Board({ setNewBoard }) {
       column: columnId,
       description: description,
     });
-    setEditModal((prev) =>
-      prev.task?.id === taskId
-        ? {
-            ...prev,
-            task: {
-              ...prev.task,
-              description,
-            },
-          }
-        : prev
-    );
+    updateModalTask(taskId, { description });
     setColumns((prev) =>
       prev.map((column) =>
         column.id === columnId
@@ -214,17 +235,7 @@ function Board({ setNewBoard }) {
       column: columnId,
       completed: completed,
     });
-    setEditModal((prev) =>
-      prev.task?.id === taskId
-        ? {
-            ...prev,
-            task: {
-              ...prev.task,
-              completed,
-            },
-          }
-        : prev
-    );
+    updateModalTask(taskId, { completed });
     setColumns((prev) =>
       prev.map((column) =>
         column.id === columnId
@@ -248,17 +259,7 @@ function Board({ setNewBoard }) {
       column: columnId,
       title: newTitle,
     });
-    setEditModal((prev) =>
-      prev.task?.id === taskId
-        ? {
-            ...prev,
-            task: {
-              ...prev.task,
-              title: newTitle,
-            },
-          }
-        : prev
-    );
+    updateModalTask(taskId, { title: newTitle });
     setColumns((prev) =>
       prev.map((column) =>
         column.id === columnId
@@ -318,15 +319,10 @@ function Board({ setNewBoard }) {
       {editModal.show && (
         <div
           className="w-full fixed min-h-screen flex items-center justify-center bg-black/60  inset-0 backdrop-blur-[2px] z-1000"
-          onClick={() => {
-            setEditModal({
-              show: false,
-              task: null,
-            });
-          }}
+          onClick={closeTaskModal}
         >
           <div className="p-6 w-full " onClick={(e) => e.stopPropagation()}>
-            <EditTasks
+            <TaskModal
               task={editModal.task}
               title={editModal.task.title}
               updateTaskDescription={updateTaskDescription}
@@ -361,6 +357,7 @@ function Board({ setNewBoard }) {
       )}
       <DndContext
         onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         sensors={sensors}
       >
@@ -376,7 +373,7 @@ to-fuchsia-400  h-[calc(100vh-100px)] rounded-2xl border-slate-400 scrollbar-thi
           <div className="overflow-x-auto overflow-y-auto px-2 h-[calc(100%-140px)]">
             <div className="flex gap-4 items-start">
               {columns.map((card) => (
-                <PriorityCard
+                <BoardColumn
                   setEditModal={setEditModal}
                   editModal={editModal}
                   key={card.id}
@@ -391,7 +388,7 @@ to-fuchsia-400  h-[calc(100vh-100px)] rounded-2xl border-slate-400 scrollbar-thi
                   updateTaskStatus={updateTaskStatus}
                 />
               ))}
-              <AddColumn addColumn={addColumn} />
+              <AddColumnForm addColumn={addColumn} />
             </div>
           </div>
         </div>

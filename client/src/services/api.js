@@ -1,10 +1,45 @@
 import axios from "axios";
-import { ChevronsDown } from "lucide-react";
 
 const api = axios.create({
   baseURL: "http://localhost:5050",
   withCredentials: true,
 });
+
+const clearAuthAndLogout = () => {
+  localStorage.removeItem("access-token");
+  localStorage.removeItem("User");
+
+  // force app to reset all React state/context
+  window.location.href = "/login";
+};
+
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("access-token");
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+let isRefreshing = false;
+let refreshQueue = [];
+
+const processQueue = (error, token = null) => {
+  refreshQueue.forEach((promise) => {
+    if (error) {
+      promise.reject(error);
+    } else {
+      promise.resolve(token);
+    }
+  });
+
+  refreshQueue = [];
+};
 
 api.interceptors.request.use(
   (config) => {
@@ -25,37 +60,70 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    const isRefreshRoute = originalRequest?.url?.includes(
-      "/auth/refresh-token"
-    );
-
-    if (isRefreshRoute) {
-      localStorage.removeItem("access-token");
-      localStorage.removeItem("User");
+    if (!originalRequest) {
       return Promise.reject(error);
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      try {
-        originalRequest._retry = true;
+    const isRefreshRoute = originalRequest.url?.includes(
+      "/api/v1/auth/refresh-token"
+    );
 
-        const refreshResponse = await api.post("/api/v1/auth/refresh-token");
+    const isAuthRoute =
+      originalRequest.url?.includes("/api/v1/auth/login") ||
+      originalRequest.url?.includes("/api/v1/auth/register");
 
-        const newAccessToken = refreshResponse.data.accessToken;
-
-        localStorage.setItem("access-token", newAccessToken);
-
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-
-        return api(originalRequest);
-      } catch (refreshError) {
-        localStorage.removeItem("access-token");
-        localStorage.removeItem("User");
-        return Promise.reject(refreshError);
-      }
+    if (isRefreshRoute) {
+      clearAuthAndLogout();
+      return Promise.reject(error);
     }
 
-    return Promise.reject(error);
+    if (
+      error.response?.status !== 401 ||
+      originalRequest._retry ||
+      isAuthRoute
+    ) {
+      return Promise.reject(error);
+    }
+
+    originalRequest._retry = true;
+
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        refreshQueue.push({ resolve, reject });
+      })
+        .then((newToken) => {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        })
+        .catch((err) => Promise.reject(err));
+    }
+
+    isRefreshing = true;
+
+    try {
+      const refreshResponse = await api.post("/api/v1/auth/refresh-token");
+
+      const newAccessToken = refreshResponse.data?.accessToken;
+
+      if (!newAccessToken) {
+        throw new Error("Refresh succeeded but no access token returned");
+      }
+
+      localStorage.setItem("access-token", newAccessToken);
+
+      api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+      processQueue(null, newAccessToken);
+
+      return api(originalRequest);
+    } catch (refreshError) {
+      processQueue(refreshError, null);
+      clearAuthAndLogout();
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
   }
 );
 
@@ -160,6 +228,13 @@ export const taskService = {
   updateTask: async (boardId, taskId, taskData) => {
     const response = await api.patch(
       `/api/v1/boards/${boardId}/tasks/${taskId}`,
+      taskData
+    );
+    return response.data;
+  },
+  moveTask: async (boardId, taskId, taskData) => {
+    const response = await api.patch(
+      `/api/v1/boards/${boardId}/tasks/${taskId}/move`,
       taskData
     );
     return response.data;

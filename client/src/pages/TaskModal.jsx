@@ -1,10 +1,11 @@
 import React from "react";
 import TaskHeader from "../components/TaskHeader";
-import TaskData from "../components/TaskData";
+
 import Members from "../components/Members";
 import { Trash2 } from "lucide-react";
+import TaskDetails from "../components/TaskDetails";
 
-function EditTasks({
+function TaskModal({
   task,
   deleteTask,
   title,
@@ -19,7 +20,7 @@ function EditTasks({
       <TaskHeader title={title} setEditModal={setEditModal} />
 
       <div className="flex overflow-auto">
-        <TaskData
+        <TaskDetails
           updateTitle={updateTitle}
           task={task}
           title={title}
@@ -42,4 +43,4 @@ function EditTasks({
   );
 }
 
-export default EditTasks;
+export default TaskModal;

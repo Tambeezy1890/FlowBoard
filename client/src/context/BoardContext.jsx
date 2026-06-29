@@ -25,7 +25,6 @@ export const BoardProvider = ({ children }) => {
 
         if (response.data.length > 0) {
           setActiveBoard(response.data[0]);
-          console.log(boards);
         }
       } catch (err) {
         console.error(err);

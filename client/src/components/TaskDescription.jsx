@@ -2,7 +2,7 @@ import { ListSortDescending } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useDebounce } from "../hooks/useDebounce";
 
-function Description({ task, updateTaskDescription, columnId }) {
+function TaskDescription({ task, updateTaskDescription, columnId }) {
   const [description, setDescription] = useState(task.description || "");
   const debouncedDescription = useDebounce(description, 5000);
   const hasUserTyped = useRef(false);
@@ -50,4 +50,4 @@ function Description({ task, updateTaskDescription, columnId }) {
   );
 }
 
-export default Description;
+export default TaskDescription;

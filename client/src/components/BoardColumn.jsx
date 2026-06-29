@@ -1,16 +1,16 @@
 import { Ellipsis, Minimize2, Plus, StickyNotePlus } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import Task from "./Task";
-import EditTasks from "../pages/EditTasks";
+import TaskCard from "./TaskCard";
+import EditTasks from "../pages/TaskModal";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import DropdownMenu from "./DropdownMenu";
 import { useDebounce } from "../hooks/useDebounce";
+import BoardMenu from "./BoardMenu";
 
-function PriorityCard({
+function BoardColumn({
   column,
   addTask,
   count,
@@ -29,6 +29,7 @@ function PriorityCard({
     edit: false,
     title: column.title,
   });
+  const [collapse, setCollapse] = useState(false);
   const hasUserTyped = useRef(false);
   const debouncedValue = useDebounce(editTitle.title, 5000);
 
@@ -85,13 +86,13 @@ function PriorityCard({
           }}
         >
           <div className="p-6 w-full " onClick={(e) => e.stopPropagation()}>
-            <DropdownMenu column={column} deleteColumn={deleteColumn} />
+            <BoardMenu column={column} deleteColumn={deleteColumn} />
           </div>
         </div>
       )}
 
       <div
-        className="bg-black max-w-60 w-full p-2 rounded-xl text-white "
+        className={`bg-black ${collapse ? "max-w-12 w-full overflow-hidden relative" : "max-w-60 w-full"} p-2 rounded-xl text-white `}
         ref={setNodeRef}
       >
         <div className="flex flex-col gap-2 ">
@@ -126,14 +127,22 @@ function PriorityCard({
                   }}
                 />
               ) : (
-                <h2 className="text-white">{column.title}</h2>
+                <h2
+                  className={`text-white ${collapse ? "mr-10 mt-4 rotate-90" : ""}`}
+                >
+                  {column.title}
+                </h2>
               )}
             </div>
             <div className="flex gap-2 items-center">
               {/* conditonal value */}
               <p>{count}</p>
 
-              <Minimize2 className="rotate-45" size={18} />
+              <Minimize2
+                className={`rotate-45 ${collapse ? "absolute top-2 left-2 z-1000" : ""}`}
+                size={18}
+                onClick={() => setCollapse(!collapse)}
+              />
               <Ellipsis onClick={() => setShowMenu(true)} size={18} />
             </div>
           </div>
@@ -142,7 +151,7 @@ function PriorityCard({
             strategy={verticalListSortingStrategy}
           >
             {column.tasks.map((task) => (
-              <Task
+              <TaskCard
                 key={task.id}
                 task={task}
                 columnId={columnId}
@@ -180,4 +189,4 @@ function PriorityCard({
   );
 }
 
-export default PriorityCard;
+export default BoardColumn;

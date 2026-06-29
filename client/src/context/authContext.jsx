@@ -36,7 +36,9 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const response = await authService.register(userData);
-      toast.success("Registration successful");
+      if (response.success) {
+        toast.success("Registration successful");
+      }
       return response;
     } catch (error) {
       const message =

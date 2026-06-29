@@ -1,6 +1,6 @@
 import React from "react";
 
-function DropdownMenu({ column, deleteColumn }) {
+function BoardMenu({ column, deleteColumn }) {
   return (
     <div className="fixed right-5 top-10 bg-slate-600 rounded-lg p-2 z-1000">
       <div className="flex flex-col">
@@ -25,4 +25,4 @@ function DropdownMenu({ column, deleteColumn }) {
   );
 }
 
-export default DropdownMenu;
+export default BoardMenu;

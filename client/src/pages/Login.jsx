@@ -1,15 +1,23 @@
-import { Eye, KeyRound, Mail } from "lucide-react";
+import {
+  ArrowRight,
+  Eye,
+  EyeClosed,
+  KeyRound,
+  Loader2,
+  Mail,
+} from "lucide-react";
 import React, { useState } from "react";
 import { useAuth } from "../context/authContext";
 import Dashboard from "./Dashboard";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Login() {
   const [data, setData] = useState({
     email: "",
     password: "",
   });
-  const { loginUser } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const { loginUser, loading } = useAuth();
   const navigate = useNavigate();
   const handleChange = (e) => {
     setData((prev) => {
@@ -26,7 +34,7 @@ function Login() {
     if (response.success) {
       setTimeout(() => {
         navigate("/dashboard");
-      }, 3000);
+      }, 2000);
     }
   };
   return (
@@ -79,7 +87,7 @@ function Login() {
                 <div className="relative ">
                   <div className="flex items-center">
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       className="outline-none ring-1 ring-slate-300 hover:ring-indigo-500 focus-within:ring-indigo-300 w-full pl-11 transition-colors"
                       value={data.password}
                       name="password"
@@ -91,21 +99,45 @@ function Login() {
                       size={18}
                       strokeWidth={1}
                     />
-                    <Eye
+                    <div
+                      onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-0 mr-2"
-                      size={18}
-                      strokeWidth={1}
-                    />
+                    >
+                      {showPassword ? (
+                        <EyeClosed size={18} strokeWidth={1} />
+                      ) : (
+                        <Eye size={18} strokeWidth={1} />
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
               <div className="px-2 mt-2">
                 <button
                   type="submit"
-                  className="bg-slate-900 text-white w-full px-2 py-2 rounded-lg hover:bg-slate-700 transition-colors"
+                  className="bg-slate-900 text-white w-full px-2 py-2 rounded-lg hover:bg-slate-700 transition-colors disabled:opacity-7"
+                  disabled={loading}
                 >
-                  Login
+                  {loading ? (
+                    <Loader2 className="animate-spin text-indigo-600" />
+                  ) : (
+                    "Login"
+                  )}
                 </button>
+                <Link
+                  className="flex item-center justify-center mt-2 group"
+                  to="/register"
+                >
+                  <p className="text-[12px]">
+                    Not Registered?{" "}
+                    <span className="font-bold text-indigo-600">Register</span>
+                  </p>
+                  <ArrowRight
+                    size={18}
+                    strokeWidth={1}
+                    className="group-hover:translate-x-1 transition-transform"
+                  />
+                </Link>
               </div>
             </form>
           </div>
