@@ -1,3 +1,4 @@
+import { io } from "../../../../server.js";
 import { ApiError } from "../../../util/ApiError.js";
 import { asyncHandler } from "../../../util/fetch.js";
 import Board from "../models/board.model.js";
@@ -83,8 +84,11 @@ export const createColumn = asyncHandler(async (req, res, next) => {
   if (!created) {
     throw new ApiError(404, "Board not found");
   }
-
-  res.status(201).json({
+  io.to(boardId).emit("column-created", {
+    boardId,
+    board: created,
+  });
+  return res.status(201).json({
     success: true,
     data: created,
   });

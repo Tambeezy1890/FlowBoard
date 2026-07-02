@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
 import Nav from "../components/layout/Nav";
-import Board from "../components/Board/Board";
+import Board from "../components/board/Board";
 import { useAuth } from "../context/authContext";
 import { useBoard } from "../context/BoardContext";
 import { Columns } from "lucide-react";

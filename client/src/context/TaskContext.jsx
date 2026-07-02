@@ -25,7 +25,7 @@ export const TaskProvider = ({ children }) => {
   const createTask = async (boardId, taskData) => {
     try {
       const response = await taskService.createTask(boardId, taskData);
-      setTasks((prev) => [...prev, response.data]);
+
       toast.success("Task created");
       return response;
     } catch (err) {
@@ -87,6 +87,13 @@ export const TaskProvider = ({ children }) => {
       toast.error(message);
     }
   };
-  const value = { tasks, createTask, deleteTask, updateTask, moveTask };
+  const value = {
+    tasks,
+    createTask,
+    deleteTask,
+    updateTask,
+    moveTask,
+    setTasks,
+  };
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;
 };

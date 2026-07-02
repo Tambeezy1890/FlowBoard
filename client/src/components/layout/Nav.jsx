@@ -2,6 +2,7 @@ import { Calendar, Columns3, Inbox, LayoutDashboard, Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { boardService } from "../../services/api";
 import { useBoard } from "../../context/BoardContext";
+import { useAuth } from "../../context/authContext";
 
 function Nav({
   setNewBoard,
@@ -11,8 +12,15 @@ function Nav({
   showBoard,
 }) {
   const [menu, setMenu] = useState(false);
-
   const { setActiveBoard, boards } = useBoard();
+  const { user } = useAuth();
+
+  const myBoards = boards.filter((board) => board.owner === user.id);
+  const groupBoards = boards.filter(
+    (board) =>
+      board.owner !== user.id &&
+      board.members?.some((member) => member === user.id)
+  );
 
   return (
     <>
@@ -39,7 +47,25 @@ function Nav({
             </div>
 
             <div className="space-y-2">
-              {boards.map((board) => (
+              <h4 className="text-white text-lg font-semibold mb-3">
+                My Boards
+              </h4>
+              {myBoards.map((board) => (
+                <button
+                  key={board._id}
+                  onClick={() => {
+                    setActiveBoard(board);
+                    setMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-3 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/40 text-white border border-indigo-400/30"
+                >
+                  {board.title}
+                </button>
+              ))}
+              <h4 className="text-white text-lg font-semibold mb-3">
+                Shared Boards
+              </h4>
+              {groupBoards.map((board) => (
                 <button
                   key={board._id}
                   onClick={() => {
