@@ -11,6 +11,7 @@ export const BoardProvider = ({ children }) => {
   const [activeBoard, setActiveBoard] = useState();
   const [boards, setBoards] = useState([]);
   const [loadingBoard, setLoadingBoard] = useState(false);
+  const [inviteLink, setInviteLink] = useState();
   const { user, loading } = useAuth();
 
   useEffect(() => {
@@ -54,6 +55,7 @@ export const BoardProvider = ({ children }) => {
     }
   };
   const createColumn = async (columnData, boardId) => {
+    console.log(columnData);
     setLoadingBoard(true);
     try {
       const response = await boardService.createColumn(columnData, boardId);
@@ -133,6 +135,36 @@ export const BoardProvider = ({ children }) => {
       toast.error(message);
     }
   };
+  const getInviteLink = async () => {
+    try {
+      const response = await boardService.invite(activeBoard._id);
+      setInviteLink(response.url);
+      return response.url;
+    } catch (err) {
+      setInviteLink(null);
+      const message =
+        err.response?.data?.message || "Failed to generate invite link";
+      toast.error(message);
+    }
+  };
+  const acceptInviteLink = async (token) => {
+    try {
+      const response = await boardService.join(token);
+
+      const boardsResponse = await boardService.getBoards();
+      setBoards(boardsResponse.data);
+
+      if (boardsResponse.data.length > 0) {
+        setActiveBoard(boardsResponse.data[0]);
+      }
+      toast.success(response.message);
+      return response;
+    } catch (err) {
+      const message =
+        err.response?.data?.message || "Failed to generate invite link";
+      toast.error(message);
+    }
+  };
 
   const value = {
     loadingBoard,
@@ -145,6 +177,8 @@ export const BoardProvider = ({ children }) => {
     deleteBoard,
     deleteColumn,
     updateColumn,
+    getInviteLink,
+    acceptInviteLink,
   };
   return (
     <BoardContext.Provider value={value}>{children}</BoardContext.Provider>

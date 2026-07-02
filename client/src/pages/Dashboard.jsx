@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
-import Nav from "../components/Nav";
-import Board from "../components/Board";
+import Navbar from "../components/layout/Navbar";
+import Sidebar from "../components/layout/Sidebar";
+import Nav from "../components/layout/Nav";
+import Board from "../components/Board/Board";
 import { useAuth } from "../context/authContext";
 import { useBoard } from "../context/BoardContext";
 import { Columns } from "lucide-react";
@@ -10,9 +10,12 @@ function Dashboard() {
   const [newBoard, setNewBoard] = useState();
   const [showSidebar, setShowSidebar] = useState(true);
   const [showBoard, setShowBoard] = useState(true);
+  const [invite, setInvite] = useState(false);
   const [data, setData] = useState({
     title: "",
   });
+  const [link, setLink] = useState();
+
   const {
     activeBoard,
     setActiveBoard,
@@ -20,7 +23,18 @@ function Dashboard() {
     setBoards,
     createBoard,
     loadingBoard,
+    getInviteLink,
   } = useBoard();
+  useEffect(() => {
+    const loadInviteLink = async () => {
+      if (!invite) return;
+
+      const url = await getInviteLink();
+      setLink(url);
+    };
+
+    loadInviteLink();
+  }, [invite]);
   const handleChange = (e) => {
     setData((prev) => ({
       ...prev,
@@ -41,6 +55,44 @@ function Dashboard() {
 
   return (
     <>
+      {invite && (
+        <div
+          className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
+          onClick={() => setInvite(false)}
+        >
+          <div
+            className="w-full max-w-lg rounded-2xl bg-slate-950 border border-slate-700 p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-xl font-semibold text-white">Invite Link</h1>
+
+              <button
+                onClick={() => setInvite(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="rounded-xl bg-slate-900 border border-slate-700 p-3">
+              <p className="text-sm text-slate-400 mb-2">Share this link:</p>
+
+              <p className="text-sm text-slate-100 break-all">{link}</p>
+            </div>
+
+            <button
+              onClick={() => {
+                (navigator.clipboard.writeText(link),
+                  toast.success("Copied to clipboard"));
+              }}
+              className="mt-4 w-full rounded-xl bg-blue-500 py-2 font-medium text-white hover:bg-blue-600"
+            >
+              Copy Link
+            </button>
+          </div>
+        </div>
+      )}
       {newBoard && (
         <div
           className="bg-transparent backdrop-blur-sm h-screen fixed inset-0 z-1000 pt-4 text-center"
@@ -89,7 +141,11 @@ function Dashboard() {
             <div
               className={`${showBoard ? "flex-3" : "hidden"} w-full h-screen overflow-hidden bg-slate-900 rounded-2xl shrink`}
             >
-              <Board setNewBoard={setNewBoard} />
+              <Board
+                setNewBoard={setNewBoard}
+                invite={invite}
+                setInvite={setInvite}
+              />
             </div>
           ) : (
             <div className="flex-1 w-full h-screen overflow-hidden flex items-center justify-center">

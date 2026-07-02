@@ -180,6 +180,14 @@ export const boardService = {
       console.error(err);
     }
   },
+  invite: async (boardId) => {
+    const response = await api.post(`/api/v1/boards/${boardId}/invite`);
+    return response.data;
+  },
+  join: async (token) => {
+    const response = await api.post(`/api/v1/boards/${token}/accept`);
+    return response.data;
+  },
   createColumn: async (columns, boardId) => {
     try {
       const response = await api.post(

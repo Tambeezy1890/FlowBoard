@@ -1,13 +1,13 @@
 import { Ellipsis, Minimize2, Plus, StickyNotePlus } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import TaskCard from "./TaskCard";
-import EditTasks from "../pages/TaskModal";
+import TaskCard from "../task/TaskCard";
+import EditTasks from "../../pages/TaskModal";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { useDebounce } from "../hooks/useDebounce";
+import { useDebounce } from "../../hooks/useDebounce";
 import BoardMenu from "./BoardMenu";
 
 function BoardColumn({
@@ -29,6 +29,7 @@ function BoardColumn({
     edit: false,
     title: column.title,
   });
+
   const [collapse, setCollapse] = useState(false);
   const hasUserTyped = useRef(false);
   const debouncedValue = useDebounce(editTitle.title, 5000);
@@ -80,7 +81,7 @@ function BoardColumn({
     <div className="relative">
       {showMenu && (
         <div
-          className="w-full fixed min-h-screen flex items-center justify-center bg-black/60  inset-0 backdrop-blur-[2px] z-1000"
+          className="w-full fixed min-h-screen flex items-center justify-center bg-black/60  inset-0 backdrop-blur-[2px] z-10"
           onClick={() => {
             setShowMenu(false);
           }}
@@ -92,7 +93,7 @@ function BoardColumn({
       )}
 
       <div
-        className={`bg-black ${collapse ? "max-w-12 w-full overflow-hidden relative" : "max-w-60 w-full"} p-2 rounded-xl text-white `}
+        className={` bg-black ${collapse ? "max-w-12 w-full overflow-hidden relative" : "max-w-60 w-full"} p-2 rounded-xl text-white `}
         ref={setNodeRef}
       >
         <div className="flex flex-col gap-2 ">

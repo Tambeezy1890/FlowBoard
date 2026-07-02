@@ -4,23 +4,23 @@ import {
   generateTokensAndSendResponse,
   verifyRefreshToken,
 } from "../../../util/jwt.token.js";
-import Team from "../models/user.model.js";
+import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 export const registerUser = asyncHandler(async (req, res, next) => {
   const { email, password, username } = req.body;
-  const userExist = await Team.findOne({ email });
+  const userExist = await User.findOne({ email });
   if (userExist) {
     throw new ApiError(400, "User already exists");
   }
 
-  const newUser = await Team.create({ email, password, username });
+  const newUser = await User.create({ email, password, username });
 
   return res.status(201).json({ success: true, message: "User created" });
 });
 
 export const loginUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
-  const user = await Team.findOne({ email });
+  const user = await User.findOne({ email });
   if (!user) {
     throw new ApiError(400, "Invalid credentials");
   }
@@ -52,7 +52,7 @@ export const generateNewAccessToken = asyncHandler(async (req, res) => {
 
   const decoded = verifyRefreshToken(refreshToken);
 
-  const user = await Team.findById(decoded.id).select("-password");
+  const user = await User.findById(decoded.id).select("-password");
 
   if (!user) {
     throw new ApiError(401, "Invalid refresh token");

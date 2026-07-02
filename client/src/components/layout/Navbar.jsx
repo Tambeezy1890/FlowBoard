@@ -7,8 +7,11 @@ import {
   Star,
 } from "lucide-react";
 import React from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 function Navbar() {
+  const navigate = useNavigate();
   return (
     <div className="mb-3 px-2 text-white ">
       <div className="flex ">
@@ -36,6 +39,18 @@ function Navbar() {
               <div className="w-6 h-6 bg-blue-400 rounded-full"></div>
             </div>
           </div>
+        </div>
+        <div className="flex-1 flex justify-end">
+          <button
+            className="mx-w-sm bg-rose-200 text-rose-600 px-2 rounded-md"
+            onClick={() => {
+              (localStorage.clear(),
+                toast.success("Logged out"),
+                navigate("/login"));
+            }}
+          >
+            Logout
+          </button>
         </div>
       </div>
     </div>
