@@ -17,8 +17,8 @@ export const updateColumn = asyncHandler(async (req, res) => {
   const updatedBoard = await Board.findOneAndUpdate(
     {
       _id: boardId,
-      team: req.user._id,
       "columns._id": columnId,
+      $or: [{ owner: req.user._id }, { members: req.user._id }],
     },
     { $set: updates },
     {
@@ -37,8 +37,7 @@ export const deleteColumn = asyncHandler(async (req, res, next) => {
   const { boardId, columnId } = req.params;
   const deletedColumn = await Board.findOneAndUpdate(
     {
-      _id: boardId,
-      team: req.user._id,
+      $or: [{ owner: req.user._id }, { members: req.user._id }],
     },
     {
       $pull: {
@@ -67,7 +66,7 @@ export const createColumn = asyncHandler(async (req, res, next) => {
   const created = await Board.findOneAndUpdate(
     {
       _id: boardId,
-      team: req.user._id,
+      $or: [{ owner: req.user._id }, { members: req.user._id }],
     },
     {
       $push: {
@@ -76,7 +75,10 @@ export const createColumn = asyncHandler(async (req, res, next) => {
         },
       },
     },
-    { returnDocument: "after", runValidators: true }
+    {
+      new: true,
+      runValidators: true,
+    }
   );
   if (!created) {
     throw new ApiError(404, "Board not found");

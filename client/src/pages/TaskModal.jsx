@@ -1,9 +1,9 @@
 import React from "react";
-import TaskHeader from "../components/TaskHeader";
+import TaskHeader from "../components/task/TaskHeader";
 
 import Members from "../components/Members";
 import { Trash2 } from "lucide-react";
-import TaskDetails from "../components/TaskDetails";
+import TaskDetails from "../components/task/TaskDetails";
 
 function TaskModal({
   task,

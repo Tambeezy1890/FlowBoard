@@ -2,11 +2,19 @@ import mongoose from "mongoose";
 
 const boardSchema = new mongoose.Schema(
   {
-    team: {
+    inviteToken: String,
+    inviteTokenExpires: Date,
+    owner: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Team",
+      ref: "User",
       required: true,
     },
+    members: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     title: {
       type: String,
       required: true,
@@ -18,6 +26,7 @@ const boardSchema = new mongoose.Schema(
       },
     ],
   },
+
   { timestamps: true }
 );
 const Board = mongoose.model("Board", boardSchema);

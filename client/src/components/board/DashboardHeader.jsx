@@ -1,8 +1,9 @@
 import { Ellipsis, ListFilter, Lock, Star, UserPlus2 } from "lucide-react";
-import React, { useState } from "react";
-import { useBoard } from "../context/BoardContext";
+import React, { useEffect, useState } from "react";
+import { useBoard } from "../../context/BoardContext";
+import toast from "react-hot-toast";
 
-function DashboardHeader({ setMenu }) {
+function DashboardHeader({ setMenu, invite, setInvite }) {
   const { activeBoard } = useBoard();
   return (
     <>
@@ -22,7 +23,10 @@ to-fuchsia-100 w-full py-2 mb-3 px-2 "
             <div className=" gap-2 items-center hidden md:flex">
               <Star size={20} strokeWidth={1} />
               <Lock size={20} strokeWidth={1} />
-              <div className="flex items-center">
+              <div
+                className="flex items-center"
+                onClick={() => setInvite(true)}
+              >
                 <UserPlus2 size={20} strokeWidth={1} />
                 Share
               </div>

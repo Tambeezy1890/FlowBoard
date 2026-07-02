@@ -1,6 +1,6 @@
 import { ListSortDescending } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { useDebounce } from "../hooks/useDebounce";
+import { useDebounce } from "../../hooks/useDebounce";
 
 function TaskDescription({ task, updateTaskDescription, columnId }) {
   const [description, setDescription] = useState(task.description || "");

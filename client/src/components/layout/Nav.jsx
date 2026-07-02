@@ -1,7 +1,7 @@
 import { Calendar, Columns3, Inbox, LayoutDashboard, Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { boardService } from "../services/api";
-import { useBoard } from "../context/BoardContext";
+import { boardService } from "../../services/api";
+import { useBoard } from "../../context/BoardContext";
 
 function Nav({
   setNewBoard,

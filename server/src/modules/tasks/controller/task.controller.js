@@ -54,7 +54,7 @@ export const createTask = asyncHandler(async (req, res, next) => {
 
   const board = await Board.findOne({
     _id: boardId,
-    team: req.user._id,
+    owner: req.user._id,
     "columns._id": column,
   });
 
@@ -94,7 +94,7 @@ export const updateTask = asyncHandler(async (req, res, next) => {
   if (column) {
     const board = await Board.findOne({
       _id: boardId,
-      team: req.user._id,
+      owner: req.user._id,
       "columns._id": column,
     });
 
@@ -148,7 +148,7 @@ export const moveTask = asyncHandler(async (req, res, next) => {
 
   const board = await Board.findOne({
     _id: boardId,
-    team: req.user._id,
+    owner: req.user._id,
     "columns._id": column,
   });
 
