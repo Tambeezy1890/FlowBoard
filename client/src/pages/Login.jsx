@@ -12,135 +12,142 @@ import Dashboard from "./Dashboard";
 import { Link, useNavigate } from "react-router-dom";
 
 function Login() {
-  const [data, setData] = useState({
-    email: "",
-    password: "",
-  });
+  const [data, setData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+
   const { loginUser, loading } = useAuth();
   const navigate = useNavigate();
+
   const handleChange = (e) => {
-    setData((prev) => {
-      return {
-        ...prev,
-        [e.target.name]: e.target.value,
-      };
-    });
+    setData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
+
   const handleLogin = async (e) => {
     e.preventDefault();
+
     const response = await loginUser(data);
-    console.log(response);
-    if (response.success) {
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 2000);
+
+    if (response?.success) {
+      setTimeout(() => navigate("/dashboard"), 1200);
     }
   };
+
   return (
     <>
       <Dashboard />
-      <div className="bg-slate-900/90 h-screen backdrop-blur-sm fixed inset-0 z-1000">
-        <div className="flex items-center justify-center h-[calc(100vh-30%)]">
-          <div className="max-w-md w-full bg-slate-400 p-2 rounded-xl shadow-sm shadow-indigo-500 space-y-8">
-            <div className="flex items-center justify-center flex-col">
-              <h1 className="text-2xl text-indigo-900 text-shadow-2xs font-black tracking-wide">
-                Login Form
-              </h1>
-              <p className="text-sm tracking-widest text-slate-600 font-medium">
-                Login to access the dashboard
-              </p>
+
+      <div className="fixed inset-0 z-1000 flex items-center justify-center bg-slate-950/80 backdrop-blur-md px-4">
+        <div className="w-full max-w-md rounded-3xl border border-slate-700/70 bg-slate-950 p-6 shadow-2xl shadow-blue-950/40">
+          <div className="mb-8 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-400 ring-1 ring-blue-400/30">
+              <KeyRound size={26} strokeWidth={1.5} />
             </div>
 
-            <form className="space-y-1" onSubmit={(e) => handleLogin(e)}>
-              <div className=" relative border-b border-slate-500 pt-6 pb-2">
-                <label className="absolute top-0 text-[12px] text-slate-300 font-medium">
-                  Email
+            <h1 className="text-3xl font-bold tracking-tight text-white">
+              Welcome back
+            </h1>
+
+            <p className="mt-2 text-sm text-slate-400">
+              Log in to continue managing your boards.
+            </p>
+          </div>
+
+          <form className="space-y-4" onSubmit={handleLogin}>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-300">
+                Email
+              </label>
+
+              <div className="relative">
+                <Mail
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+                  size={18}
+                  strokeWidth={1.5}
+                />
+
+                <input
+                  type="email"
+                  name="email"
+                  value={data.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="you@example.com"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-900 px-10 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20"
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <label className="text-sm font-medium text-slate-300">
+                  Password
                 </label>
-                <div className="relative ">
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      className="outline-none ring-1 ring-slate-300 hover:ring-indigo-500 focus-within:ring-indigo-300 w-full pl-11 transition-colors"
-                      value={data.email}
-                      name="email"
-                      onChange={(e) => handleChange(e)}
-                      required
-                    />
-                    <Mail
-                      className="absolute translate-y-1 ml-1 top-0"
-                      size={18}
-                      strokeWidth={1}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className=" relative border-b border-slate-500 pt-6 pb-2 ">
-                <div className="flex justify-between">
-                  <label className="absolute top-0 text-[12px] text-slate-300 font-medium ">
-                    Password
-                  </label>
-                  <button className="absolute right-0 top-0 text-[12px] text-slate-300 font-medium hover:text-indigo-400 transition-colors">
-                    Forgot password
-                  </button>
-                </div>
-                <div className="relative ">
-                  <div className="flex items-center">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      className="outline-none ring-1 ring-slate-300 hover:ring-indigo-500 focus-within:ring-indigo-300 w-full pl-11 transition-colors"
-                      value={data.password}
-                      name="password"
-                      onChange={(e) => handleChange(e)}
-                      required
-                    />
-                    <KeyRound
-                      className="absolute translate-y-1 ml-1 top-0"
-                      size={18}
-                      strokeWidth={1}
-                    />
-                    <div
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-0 mr-2"
-                    >
-                      {showPassword ? (
-                        <EyeClosed size={18} strokeWidth={1} />
-                      ) : (
-                        <Eye size={18} strokeWidth={1} />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="px-2 mt-2">
+
                 <button
-                  type="submit"
-                  className="bg-slate-900 text-white w-full px-2 py-2 rounded-lg hover:bg-slate-700 transition-colors disabled:opacity-7"
-                  disabled={loading}
+                  type="button"
+                  className="text-xs font-medium text-blue-400 hover:text-blue-300"
                 >
-                  {loading ? (
-                    <Loader2 className="animate-spin text-indigo-600" />
+                  Forgot password?
+                </button>
+              </div>
+
+              <div className="relative">
+                <KeyRound
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+                  size={18}
+                  strokeWidth={1.5}
+                />
+
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={data.password}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter your password"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-900 px-10 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                >
+                  {showPassword ? (
+                    <EyeClosed size={18} strokeWidth={1.5} />
                   ) : (
-                    "Login"
+                    <Eye size={18} strokeWidth={1.5} />
                   )}
                 </button>
-                <Link
-                  className="flex item-center justify-center mt-2 group"
-                  to="/register"
-                >
-                  <p className="text-[12px]">
-                    Not Registered?{" "}
-                    <span className="font-bold text-indigo-600">Register</span>
-                  </p>
-                  <ArrowRight
-                    size={18}
-                    strokeWidth={1}
-                    className="group-hover:translate-x-1 transition-transform"
-                  />
-                </Link>
               </div>
-            </form>
-          </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-2 flex w-full items-center justify-center rounded-xl bg-blue-500 py-3 text-sm font-semibold text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                "Login"
+              )}
+            </button>
+
+            <Link
+              to="/register"
+              className="group flex items-center justify-center gap-1 pt-2 text-sm text-slate-400"
+            >
+              Not registered?
+              <span className="font-semibold text-blue-400">
+                Create account
+              </span>
+              <ArrowRight
+                size={16}
+                className="transition group-hover:translate-x-1"
+              />
+            </Link>
+          </form>
         </div>
       </div>
     </>

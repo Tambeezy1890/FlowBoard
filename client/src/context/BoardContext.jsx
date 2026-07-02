@@ -25,7 +25,13 @@ export const BoardProvider = ({ children }) => {
         setBoards(response.data);
 
         if (response.data.length > 0) {
-          setActiveBoard(response.data[0]);
+          const savedBoardId = localStorage.getItem("activeBoardId");
+
+          const savedBoard = response.data.find(
+            (board) => board._id === savedBoardId
+          );
+
+          setActiveBoard(savedBoard || response.data[0]);
         }
       } catch (err) {
         console.error(err);
@@ -36,6 +42,11 @@ export const BoardProvider = ({ children }) => {
 
     getBoards();
   }, [user, loading]);
+  useEffect(() => {
+    if (activeBoard?._id) {
+      localStorage.setItem("activeBoardId", activeBoard._id);
+    }
+  }, [activeBoard?._id]);
 
   const createBoard = async (boardData) => {
     setLoadingBoard(true);
@@ -55,7 +66,6 @@ export const BoardProvider = ({ children }) => {
     }
   };
   const createColumn = async (columnData, boardId) => {
-    console.log(columnData);
     setLoadingBoard(true);
     try {
       const response = await boardService.createColumn(columnData, boardId);
@@ -97,7 +107,15 @@ export const BoardProvider = ({ children }) => {
           (board) => board._id !== boardId
         );
 
-        setActiveBoard(remainingBoards[0] || null);
+        const nextBoard = remainingBoards[0] || null;
+
+        setActiveBoard(nextBoard);
+
+        if (nextBoard?._id) {
+          localStorage.setItem("activeBoardId", nextBoard._id);
+        } else {
+          localStorage.removeItem("activeBoardId");
+        }
 
         return remainingBoards;
       });
@@ -150,13 +168,14 @@ export const BoardProvider = ({ children }) => {
   const acceptInviteLink = async (token) => {
     try {
       const response = await boardService.join(token);
-
       const boardsResponse = await boardService.getBoards();
+
       setBoards(boardsResponse.data);
 
-      if (boardsResponse.data.length > 0) {
-        setActiveBoard(boardsResponse.data[0]);
-      }
+      setActiveBoard(response.board);
+
+      localStorage.setItem("activeBoardId", response.board._id);
+
       toast.success(response.message);
       return response;
     } catch (err) {

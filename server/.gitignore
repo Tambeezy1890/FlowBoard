@@ -23,7 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
-.env*
-.env
+.env.*
+.env.development
+.env.production
 
 /coverage

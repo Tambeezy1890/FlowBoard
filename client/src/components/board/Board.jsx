@@ -10,11 +10,13 @@ import { useTask } from "../../context/TaskContext";
 import TaskModal from "../../pages/TaskModal";
 import AddColumnForm from "./AddColumnForm";
 import { useTaskModal } from "../../hooks/useTaskModal";
+import { useBoardSocket } from "../../hooks/useBoardSocket";
 
 function Board({ setNewBoard, invite, setInvite }) {
   const [menu, setMenu] = useState(false);
 
-  const { createTask, tasks, deleteTask, updateTask, moveTask } = useTask();
+  const { createTask, tasks, deleteTask, updateTask, moveTask, setTasks } =
+    useTask();
   const {
     activeBoard,
     createColumn,
@@ -22,6 +24,8 @@ function Board({ setNewBoard, invite, setInvite }) {
     deleteColumn,
     updateColumn,
     boards,
+    setActiveBoard,
+    setBoards,
   } = useBoard();
 
   const { columns, setColumns } = useBoardColumns({
@@ -53,6 +57,25 @@ function Board({ setNewBoard, invite, setInvite }) {
     deleteTask,
     updateModalTask,
   });
+  useBoardSocket({ activeBoard, setActiveBoard, setBoards, setTasks });
+  const addColumn = async (title) => {
+    if (!title.trim()) return;
+    if (!activeBoard?._id) return;
+
+    const order = activeBoard.columns?.length || 0;
+
+    await createColumn(
+      {
+        columns: [
+          {
+            title: title.trim(),
+            order,
+          },
+        ],
+      },
+      activeBoard._id
+    );
+  };
 
   const handleDeleteColumn = async (columnId) => {
     await deleteColumn(columnId, activeBoard._id);

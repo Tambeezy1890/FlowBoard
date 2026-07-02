@@ -1,3 +1,4 @@
+import { io } from "../../../../server.js";
 import { ApiError } from "../../../util/ApiError.js";
 import { asyncHandler } from "../../../util/fetch.js";
 import Board from "../../boards/models/board.model.js";
@@ -9,7 +10,6 @@ export const getTasks = asyncHandler(async (req, res, next) => {
 
   const filter = {
     board: boardId,
-    createdBy: req.user._id,
   };
 
   if (column) {
@@ -54,7 +54,7 @@ export const createTask = asyncHandler(async (req, res, next) => {
 
   const board = await Board.findOne({
     _id: boardId,
-    owner: req.user._id,
+    $or: [{ owner: req.user._id }, { members: req.user._id }],
     "columns._id": column,
   });
 
@@ -71,7 +71,10 @@ export const createTask = asyncHandler(async (req, res, next) => {
     order,
     completed,
   });
-
+  io.to(boardId).emit("task-created", {
+    boardId,
+    task: task,
+  });
   res.status(201).json({
     success: true,
     data: task,
@@ -94,7 +97,7 @@ export const updateTask = asyncHandler(async (req, res, next) => {
   if (column) {
     const board = await Board.findOne({
       _id: boardId,
-      owner: req.user._id,
+      $or: [{ owner: req.user._id }, { members: req.user._id }],
       "columns._id": column,
     });
 
@@ -108,7 +111,6 @@ export const updateTask = asyncHandler(async (req, res, next) => {
       _id: taskId,
       board: boardId,
       column: column,
-      createdBy: req.user._id,
     },
     {
       $set: updatedFields,
@@ -148,7 +150,7 @@ export const moveTask = asyncHandler(async (req, res, next) => {
 
   const board = await Board.findOne({
     _id: boardId,
-    owner: req.user._id,
+    $or: [{ owner: req.user._id }, { members: req.user._id }],
     "columns._id": column,
   });
 
@@ -160,7 +162,6 @@ export const moveTask = asyncHandler(async (req, res, next) => {
     {
       _id: taskId,
       board: boardId,
-      createdBy: req.user._id,
     },
     {
       $set: {

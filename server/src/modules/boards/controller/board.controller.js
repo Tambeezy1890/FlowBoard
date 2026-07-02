@@ -145,5 +145,7 @@ export const acceptInvite = asyncHandler(async (req, res, next) => {
   if (!board) {
     throw new ApiError(400, "Failed to add member to board");
   }
-  return res.status(200).json({ success: true, message: "Added to the group" });
+  return res
+    .status(200)
+    .json({ success: true, message: "Added to the group", board: board });
 });
