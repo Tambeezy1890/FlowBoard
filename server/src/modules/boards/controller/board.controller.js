@@ -1,3 +1,4 @@
+import { io } from "../../../../server.js";
 import { ApiError } from "../../../util/ApiError.js";
 import { asyncHandler } from "../../../util/fetch.js";
 import Board from "../models/board.model.js";
@@ -66,7 +67,10 @@ export const updateBoard = asyncHandler(async (req, res) => {
   if (!board) {
     throw new ApiError(404, "Board not found");
   }
-
+  io.to(id).emit("board:update", {
+    boardId: id,
+    board: board,
+  });
   res.status(200).json({
     success: true,
     data: board,
@@ -120,7 +124,7 @@ export const sendInvite = asyncHandler(async (req, res, next) => {
   });
 });
 export const acceptInvite = asyncHandler(async (req, res, next) => {
-  const { boardId, token } = req.params;
+  const { token } = req.params;
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
   const board = await Board.findOneAndUpdate(
     {
@@ -132,10 +136,6 @@ export const acceptInvite = asyncHandler(async (req, res, next) => {
       $addToSet: {
         members: req.user._id,
       },
-      $unset: {
-        inviteToken: "",
-        inviteTokenExpires: "",
-      },
     },
     {
       returnDocument: "after",
@@ -145,6 +145,7 @@ export const acceptInvite = asyncHandler(async (req, res, next) => {
   if (!board) {
     throw new ApiError(400, "Failed to add member to board");
   }
+  io.to(board._id).emit("member:joined");
   return res
     .status(200)
     .json({ success: true, message: "Added to the group", board: board });

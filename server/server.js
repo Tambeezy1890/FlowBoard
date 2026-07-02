@@ -11,6 +11,7 @@ export const io = new Server(server, {
     credentials: true,
   },
 });
+
 io.on("connection", (socket) => {
   console.log(`Socket ${socket.id} connected`);
   socket.on("join-board", (boardId) => {

@@ -25,7 +25,6 @@ export const TaskProvider = ({ children }) => {
   const createTask = async (boardId, taskData) => {
     try {
       const response = await taskService.createTask(boardId, taskData);
-
       toast.success("Task created");
       return response;
     } catch (err) {

@@ -71,7 +71,7 @@ export const createTask = asyncHandler(async (req, res, next) => {
     order,
     completed,
   });
-  io.to(boardId).emit("task-created", {
+  io.to(boardId).emit("task:create", {
     boardId,
     task: task,
   });
@@ -123,6 +123,11 @@ export const updateTask = asyncHandler(async (req, res, next) => {
   if (!updatedTask) {
     throw new ApiError(400, "Failed to update task");
   }
+
+  io.to(boardId).emit("task:update", {
+    boardId,
+    task: updatedTask,
+  });
   return res.status(200).json({ success: true, data: updatedTask });
 });
 
@@ -137,6 +142,10 @@ export const deleteTask = asyncHandler(async (req, res, next) => {
   if (!deletedTask) {
     throw new ApiError(400, "Failed to find task");
   }
+  io.to(boardId).emit("task:delete", {
+    boardId,
+    task: deletedTask,
+  });
   return res.status(200).json({ success: true, data: deletedTask });
 });
 
@@ -178,7 +187,10 @@ export const moveTask = asyncHandler(async (req, res, next) => {
   if (!movedTask) {
     throw new ApiError(404, "Task not found");
   }
-
+  io.to(boardId).emit("task:move", {
+    boardId,
+    task: movedTask,
+  });
   return res.status(200).json({
     success: true,
     data: movedTask,

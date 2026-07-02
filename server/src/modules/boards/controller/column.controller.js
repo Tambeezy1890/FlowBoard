@@ -31,14 +31,19 @@ export const updateColumn = asyncHandler(async (req, res) => {
   if (!updatedBoard) {
     throw new ApiError(404, "Board or column not found");
   }
-
-  res.status(200).json({ success: true, data: updatedBoard });
+  io.to(boardId).emit("column:update", {
+    boardId,
+    board: updatedBoard,
+  });
+  return res.status(200).json({ success: true, data: updatedBoard });
 });
 export const deleteColumn = asyncHandler(async (req, res, next) => {
   const { boardId, columnId } = req.params;
   const deletedColumn = await Board.findOneAndUpdate(
     {
+      _id: boardId,
       $or: [{ owner: req.user._id }, { members: req.user._id }],
+      "columns._id": columnId,
     },
     {
       $pull: {
@@ -52,6 +57,11 @@ export const deleteColumn = asyncHandler(async (req, res, next) => {
   if (!deletedColumn) {
     throw new ApiError(404, "Board not found");
   }
+  io.to(boardId).emit("column:delete", {
+    boardId,
+    board: deletedColumn,
+    columnId,
+  });
   return res
     .status(200)
     .json({ success: true, message: "Column deleted successfully" });
@@ -77,14 +87,14 @@ export const createColumn = asyncHandler(async (req, res, next) => {
       },
     },
     {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     }
   );
   if (!created) {
     throw new ApiError(404, "Board not found");
   }
-  io.to(boardId).emit("column-created", {
+  io.to(boardId).emit("column:create", {
     boardId,
     board: created,
   });

@@ -21,6 +21,27 @@ export const useBoardSocket = ({
 
       setActiveBoard((prev) => (prev?._id === boardId ? board : prev));
     };
+    const handleUpdateColumn = ({ boardId, board }) => {
+      setBoards((prev) =>
+        prev.map((item) => (item._id === boardId ? board : prev))
+      );
+      setActiveBoard((prev) => (prev?._id === boardId ? board : prev));
+    };
+    const handleDeleteColumn = ({ boardId, board, columnId }) => {
+      setBoards((prev) =>
+        prev.map((item) =>
+          item._id === boardId
+            ? {
+                ...item,
+                columns: item.columns.filter(
+                  (column) => column._id !== columnId
+                ),
+              }
+            : item
+        )
+      );
+      setActiveBoard((prev) => (prev?._id === boardId ? board : prev));
+    };
 
     const handleCreateTask = ({ boardId, task }) => {
       if (boardId !== activeBoard._id) return;
@@ -33,13 +54,33 @@ export const useBoardSocket = ({
         return [...prev, task];
       });
     };
+    const replaceTask = ({ boardId, task }) => {
+      console.log("task:", task);
 
-    socket.on("column-created", handleCreateColumn);
-    socket.on("task-created", handleCreateTask);
+      setTasks((prev) =>
+        prev.map((item) => (item._id === task._id ? task : item))
+      );
+    };
+    const handleDeleteTask = ({ boardId, task }) => {
+      setTasks((prev) => prev.filter((item) => item._id !== task._id));
+    };
+
+    socket.on("column:create", handleCreateColumn);
+    socket.on("column:update", handleUpdateColumn);
+    socket.on("column:delete", handleDeleteColumn);
+    socket.on("task:create", handleCreateTask);
+    socket.on("task:update", replaceTask);
+    socket.on("task:delete", handleDeleteTask);
+    socket.on("task:move", replaceTask);
 
     return () => {
-      socket.off("column-created", handleCreateColumn);
-      socket.off("task-created", handleCreateTask);
+      socket.off("column:create", handleCreateColumn);
+      socket.off("column:update", handleUpdateColumn);
+      socket.off("column:delete", handleDeleteColumn);
+      socket.off("task:create", handleCreateTask);
+      socket.off("task:update", replaceTask);
+      socket.off("task:delete", handleDeleteTask);
+      socket.off("task:move", replaceTask);
       socket.emit("leave-board", activeBoard._id);
     };
   }, [activeBoard?._id, setActiveBoard, setBoards]);
