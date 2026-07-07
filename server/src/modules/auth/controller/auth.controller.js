@@ -1,5 +1,6 @@
 import { ApiError } from "../../../util/ApiError.js";
 import { asyncHandler } from "../../../util/fetch.js";
+import { generateAvatarColor } from "../../../util/generateAvatarColor.js";
 import {
   generateTokensAndSendResponse,
   verifyRefreshToken,
@@ -13,7 +14,12 @@ export const registerUser = asyncHandler(async (req, res, next) => {
     throw new ApiError(400, "User already exists");
   }
 
-  const newUser = await User.create({ email, password, username });
+  const newUser = await User.create({
+    email,
+    password,
+    username,
+    avatarColor: generateAvatarColor(),
+  });
 
   return res.status(201).json({ success: true, message: "User created" });
 });

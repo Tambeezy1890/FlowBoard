@@ -9,6 +9,7 @@ import {
 } from "@dnd-kit/sortable";
 import { useDebounce } from "../../hooks/useDebounce";
 import BoardMenu from "./BoardMenu";
+import { useTask } from "../../context/TaskContext";
 
 function BoardColumn({
   column,
@@ -25,6 +26,7 @@ function BoardColumn({
 }) {
   const [card, setCard] = useState("");
   const [showMenu, setShowMenu] = useState(false);
+  const { tasks } = useTask();
   const [editTitle, setEditTitle] = useState({
     edit: false,
     title: column.title,
@@ -87,7 +89,12 @@ function BoardColumn({
           }}
         >
           <div className="p-6 w-full " onClick={(e) => e.stopPropagation()}>
-            <BoardMenu column={column} deleteColumn={deleteColumn} />
+            <BoardMenu
+              column={column}
+              deleteColumn={deleteColumn}
+              setCollapse={setCollapse}
+              setShowMenu={setShowMenu}
+            />
           </div>
         </div>
       )}
@@ -148,18 +155,20 @@ function BoardColumn({
             </div>
           </div>
           <SortableContext
-            items={column.tasks.map((task) => task.id)}
+            items={column.tasks.map((task) => task._id)}
             strategy={verticalListSortingStrategy}
           >
-            {column.tasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                columnId={columnId}
-                setEditModal={setEditModal}
-                updateTaskStatus={updateTaskStatus}
-              />
-            ))}
+            {tasks
+              .filter((task) => task.column === columnId)
+              .map((task) => (
+                <TaskCard
+                  key={task._id}
+                  task={task}
+                  columnId={columnId}
+                  setEditModal={setEditModal}
+                  updateTaskStatus={updateTaskStatus}
+                />
+              ))}
           </SortableContext>
 
           <div className="flex justify-between items-center">

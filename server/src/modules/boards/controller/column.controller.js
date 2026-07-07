@@ -2,7 +2,7 @@ import { io } from "../../../../server.js";
 import { ApiError } from "../../../util/ApiError.js";
 import { asyncHandler } from "../../../util/fetch.js";
 import Board from "../models/board.model.js";
-import db from "mongodb";
+
 export const updateColumn = asyncHandler(async (req, res) => {
   const { boardId, columnId } = req.params;
   const { title, order } = req.body;
@@ -35,6 +35,13 @@ export const updateColumn = asyncHandler(async (req, res) => {
     boardId,
     board: updatedBoard,
   });
+  io.to(boardId).emit("notification:new", {
+    type: "column:update",
+    message: `${req.user.username} updated a column`,
+    boardId,
+    senderId: req.user._id.toString(),
+    createdAt: new Date(),
+  });
   return res.status(200).json({ success: true, data: updatedBoard });
 });
 export const deleteColumn = asyncHandler(async (req, res, next) => {
@@ -61,6 +68,13 @@ export const deleteColumn = asyncHandler(async (req, res, next) => {
     boardId,
     board: deletedColumn,
     columnId,
+  });
+  io.to(boardId).emit("notification:new", {
+    type: "column:delete",
+    message: `${req.user.username} deleted a column`,
+    boardId,
+    senderId: req.user._id.toString(),
+    createdAt: new Date(),
   });
   return res
     .status(200)
@@ -97,6 +111,13 @@ export const createColumn = asyncHandler(async (req, res, next) => {
   io.to(boardId).emit("column:create", {
     boardId,
     board: created,
+  });
+  io.to(boardId).emit("notification:new", {
+    type: "column:update",
+    message: `${req.user.username} created a column`,
+    boardId,
+    senderId: req.user._id.toString(),
+    createdAt: new Date(),
   });
   return res.status(201).json({
     success: true,

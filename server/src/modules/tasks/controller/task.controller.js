@@ -16,7 +16,10 @@ export const getTasks = asyncHandler(async (req, res, next) => {
     filter.column = column;
   }
 
-  const tasks = await Task.find(filter).sort({ order: 1 });
+  const tasks = await Task.find(filter).populate(
+    "createdBy",
+    "username avatarColor avatarUrl"
+  );
 
   res.status(200).json({
     success: true,
@@ -29,8 +32,7 @@ export const getTask = asyncHandler(async (req, res, next) => {
   const task = await Task.findOne({
     _id: taskId,
     board: boardId,
-    createdBy: req.user._id,
-  });
+  }).populate("createdBy", "username avatarColor avatarUrl");
 
   if (!task) {
     throw new ApiError(404, "Task not found");
@@ -71,13 +73,24 @@ export const createTask = asyncHandler(async (req, res, next) => {
     order,
     completed,
   });
+  const populatedTask = await Task.findById(task._id).populate(
+    "createdBy",
+    "username avatarColor avatarUrl"
+  );
   io.to(boardId).emit("task:create", {
     boardId,
-    task: task,
+    task: populatedTask,
+  });
+  io.to(boardId).emit("notification:new", {
+    type: "task:create",
+    message: `${req.user.username} created a new task`,
+    boardId,
+    senderId: req.user._id.toString(),
+    createdAt: new Date(),
   });
   res.status(201).json({
     success: true,
-    data: task,
+    data: populatedTask,
   });
 });
 
@@ -119,7 +132,7 @@ export const updateTask = asyncHandler(async (req, res, next) => {
       returnDocument: "after",
       runValidators: true,
     }
-  );
+  ).populate("createdBy", "username avatarColor avatarUrl");
   if (!updatedTask) {
     throw new ApiError(400, "Failed to update task");
   }
@@ -127,6 +140,13 @@ export const updateTask = asyncHandler(async (req, res, next) => {
   io.to(boardId).emit("task:update", {
     boardId,
     task: updatedTask,
+  });
+  io.to(boardId).emit("notification:new", {
+    type: "task:update",
+    message: `${req.user.username} updated a task`,
+    boardId,
+    senderId: req.user._id.toString(),
+    createdAt: new Date(),
   });
   return res.status(200).json({ success: true, data: updatedTask });
 });
@@ -145,6 +165,13 @@ export const deleteTask = asyncHandler(async (req, res, next) => {
   io.to(boardId).emit("task:delete", {
     boardId,
     task: deletedTask,
+  });
+  io.to(boardId).emit("notification:new", {
+    type: "task:delete",
+    message: `${req.user.username} deleted a task`,
+    boardId,
+    senderId: req.user._id.toString(),
+    createdAt: new Date(),
   });
   return res.status(200).json({ success: true, data: deletedTask });
 });
@@ -182,7 +209,7 @@ export const moveTask = asyncHandler(async (req, res, next) => {
       returnDocument: "after",
       runValidators: true,
     }
-  );
+  ).populate("createdBy", "username avatarColor avatarUrl");
 
   if (!movedTask) {
     throw new ApiError(404, "Task not found");
@@ -190,6 +217,13 @@ export const moveTask = asyncHandler(async (req, res, next) => {
   io.to(boardId).emit("task:move", {
     boardId,
     task: movedTask,
+  });
+  io.to(boardId).emit("notification:new", {
+    type: "task:move",
+    message: `${req.user.username} moved a task`,
+    boardId,
+    senderId: req.user._id.toString(),
+    createdAt: new Date(),
   });
   return res.status(200).json({
     success: true,

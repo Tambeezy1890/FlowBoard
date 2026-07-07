@@ -28,6 +28,7 @@ export const generateTokensAndSendResponse = (user, res) => {
       id: user._id,
       email: user.email,
       name: user.username,
+      avatarColor: user.avatarColor,
       createdAt: user.createdAt,
     },
   });

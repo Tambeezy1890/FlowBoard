@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import DashboardHeader from "./DashboardHeader";
+
 import BoardColumn from "./BoardColumn";
 import { useBoardColumns } from "../../hooks/useBoardColumns";
 import { DndContext } from "@dnd-kit/core";
@@ -11,10 +11,14 @@ import TaskModal from "../../pages/TaskModal";
 import AddColumnForm from "./AddColumnForm";
 import { useTaskModal } from "../../hooks/useTaskModal";
 import { useBoardSocket } from "../../hooks/useBoardSocket";
+import BoardHeader from "./BoardHeader";
+import Navbar from "../layout/Navbar";
+import { useAuth } from "../../context/authContext";
 
 function Board({ setNewBoard, invite, setInvite }) {
   const [menu, setMenu] = useState(false);
-
+  const { user } = useAuth();
+  const id = user?.id;
   const { createTask, tasks, deleteTask, updateTask, moveTask, setTasks } =
     useTask();
   const {
@@ -57,7 +61,13 @@ function Board({ setNewBoard, invite, setInvite }) {
     deleteTask,
     updateModalTask,
   });
-  useBoardSocket({ activeBoard, setActiveBoard, setBoards, setTasks });
+  const { notifications, setNotifications } = useBoardSocket({
+    activeBoard,
+    setActiveBoard,
+    setBoards,
+    setTasks,
+  });
+
   const addColumn = async (title) => {
     if (!title.trim()) return;
     if (!activeBoard?._id) return;
@@ -101,6 +111,10 @@ function Board({ setNewBoard, invite, setInvite }) {
 
   return (
     <>
+      <Navbar
+        notifications={notifications}
+        setNotifications={setNotifications}
+      />
       {editModal.show && (
         <div
           className="w-full fixed min-h-screen flex items-center justify-center bg-black/60  inset-0 backdrop-blur-[2px] z-1000"
@@ -152,7 +166,7 @@ via-purple-500
 to-fuchsia-400  h-[calc(100vh-100px)] rounded-2xl border-slate-400 scrollbar-thin   "
         >
           <div className="sticky top-0">
-            <DashboardHeader
+            <BoardHeader
               setMenu={setMenu}
               invite={invite}
               setInvite={setInvite}

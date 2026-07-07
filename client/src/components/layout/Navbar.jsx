@@ -4,56 +4,81 @@ import {
   CircleQuestionMark,
   Megaphone,
   Search,
-  Star,
 } from "lucide-react";
 import React from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import Avatar from "../Avatar";
+import { useAuth } from "../../context/authContext";
 
-function Navbar() {
+function Navbar({ notifications = [], setNotifications }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
   return (
-    <div className="mb-3 px-2 text-white ">
-      <div className="flex ">
-        <div className="flex-1 text-white">
-          <Blocks size={18} />
+    <nav className="fixed top-0 left-0 right-0 z-50 h-20 px-4 bg-slate-950/95 backdrop-blur border-b border-white/10 text-white">
+      <div className="h-full max-w-7xl mx-auto flex items-center gap-4">
+        <button className="h-10 w-10 grid place-items-center rounded-xl hover:bg-white/10 transition">
+          <Blocks size={22} />
+        </button>
+
+        <div className="relative hidden md:block w-full max-w-xs">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            size={18}
+          />
+          <input
+            type="text"
+            className="w-full h-11 pl-10 pr-3 rounded-xl bg-slate-900 border border-slate-600 text-sm outline-none placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition"
+            placeholder="Search"
+          />
         </div>
-        <div className="flex-3 ">
-          <div className="relative flex gap-3 items-center ">
-            <input
-              type="text"
-              className="border border-gray-500 pl-6 text-white text-sm py-1 outline-none focus-within:border-indigo-400 focus:text-indigo-200 placeholder:text-sm rounded-sm shadow-inner w-full hidden md:block"
-              placeholder="Search"
-            />
-            <Search className="absolute left-1 text-white" size={16} />
-            <div className="bg-blue-400 rounded-sm px-2 py-1 ml-8 md:ml-0">
-              Create
-            </div>
-            <div className=" text-[10px] px-2 py-2 bg-pink-400 rounded-sm text-nowrap ">
-              12 Days left
-            </div>
-            <div className="flex gap-4 items-center w-full justify-end md:justify-normal">
-              <Megaphone size={18} strokeWidth={1} />
-              <Bell size={18} strokeWidth={1} />
-              <CircleQuestionMark size={18} strokeWidth={1} />
-              <div className="w-6 h-6 bg-blue-400 rounded-full"></div>
-            </div>
-          </div>
+
+        <button className="h-11 px-4 rounded-xl bg-blue-500 hover:bg-blue-400 font-medium shadow-sm transition">
+          Create
+        </button>
+
+        <div className="hidden sm:inline-flex h-11 min-w-max px-4 rounded-xl bg-pink-500 items-center justify-center font-semibold text-sm whitespace-nowrap">
+          12 Days left
         </div>
-        <div className="flex-1 flex justify-end">
+
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          <button className="h-10 w-10 hidden sm:grid place-items-center rounded-xl hover:bg-white/10 transition">
+            <Megaphone size={20} strokeWidth={1.7} />
+          </button>
+
           <button
-            className="mx-w-sm bg-rose-200 text-rose-600 px-2 rounded-md"
+            onClick={() => setNotifications?.([])}
+            className="relative h-10 w-10 grid place-items-center rounded-xl hover:bg-white/10 transition"
+          >
+            <Bell size={20} strokeWidth={1.7} />
+
+            {notifications.length > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-pink-500 text-white text-[11px] font-bold flex items-center justify-center border border-slate-950">
+                {notifications.length}
+              </span>
+            )}
+          </button>
+
+          <button className="h-10 w-10 hidden sm:grid place-items-center rounded-xl hover:bg-white/10 transition">
+            <CircleQuestionMark size={20} strokeWidth={1.7} />
+          </button>
+
+          <Avatar user={user} size="sm" />
+
+          <button
+            className="h-11 px-4 rounded-xl bg-rose-200 text-rose-600 font-semibold hover:bg-rose-100 transition"
             onClick={() => {
-              (localStorage.clear(),
-                toast.success("Logged out"),
-                navigate("/login"));
+              localStorage.clear();
+              toast.success("Logged out");
+              navigate("/login");
             }}
           >
             Logout
           </button>
         </div>
       </div>
-    </div>
+    </nav>
   );
 }
 

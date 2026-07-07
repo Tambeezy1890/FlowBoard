@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.login(userData);
       localStorage.setItem("access-token", response.accessToken);
       localStorage.setItem("User", JSON.stringify(response.user));
+      console.log(response.user);
       setUser(response.user);
       toast.success("Login successful");
       return response;

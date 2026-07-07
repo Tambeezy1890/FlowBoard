@@ -16,6 +16,7 @@ export const TaskProvider = ({ children }) => {
 
     const loadTasks = async () => {
       const response = await taskService.getTasks(activeBoard._id);
+      console.log(response.data);
 
       setTasks(response.data);
     };
