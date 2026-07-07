@@ -106,30 +106,37 @@ function Dashboard() {
               <h1 className="text-2xl">Create a new board</h1>
             </div>
             <form onSubmit={(e) => handleCreateBoard(e)}>
-              <div>
-                <h1>Board Title</h1>
-                <label>Title</label>
-                <input
-                  autoFocus
-                  type="text"
-                  name="title"
-                  value={data.title}
-                  onChange={(e) => handleChange(e)}
-                />
+              <div className="mt-4 flex flex-col justify-center">
+                <h1 className="text-lg font-bold tracking-widest mb-4">
+                  Board Title
+                </h1>
+                <div className="flex gap-4 justify-center items-center">
+                  <label>Title</label>
+                  <input
+                    autoFocus
+                    type="text"
+                    name="title"
+                    value={data.title}
+                    onChange={(e) => handleChange(e)}
+                    className="py-2 bg-slate-200/20 rounded-lg outline-none ring-1 hover:ring-indigo-400 pl-4 transition-colors focus:ring-indigo-600"
+                  />
+                </div>
               </div>
 
-              <button
-                className="max-w-md px-4  py-2 bg-indigo-500 rounded-2xl hover:bg-indigo-300"
-                type="submit"
-              >
-                Create Board
-              </button>
+              <div className="px-8">
+                {" "}
+                <button
+                  className="w-full  px-4  py-2 bg-indigo-500 rounded-2xl hover:bg-indigo-300 mt-8"
+                  type="submit"
+                >
+                  Create Board
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
-      <div className="bg-gray-900 h-screen px-4 py-2 overflow-hidden relative">
-        <Navbar />
+      <div className="bg-gray-900 h-screen px-4 pt-24 overflow-hidden relative ">
         <div className="flex gap-3">
           <div
             className={`${showSidebar ? "flex-2" : "hidden"} md:flex-1 w-full resize-none`}
@@ -149,6 +156,7 @@ function Dashboard() {
             </div>
           ) : (
             <div className="flex-1 w-full h-screen overflow-hidden flex items-center justify-center">
+              <Navbar />
               <button
                 className="text-3xl bg-indigo-400 p-2 rounded-xl mb-[20%] hover:bg-indigo-300 text-slate-100"
                 onClick={() => setNewBoard(true)}

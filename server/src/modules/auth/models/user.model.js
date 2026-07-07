@@ -19,8 +19,16 @@ const userSchema = new mongoose.Schema(
     username: {
       type: String,
       minLength: [2, "Username must contain at least 2 characters"],
-      maxLength: [50, "Username must be shorter than 51 characters"],
+      maxLength: [50, "Username must be short†er than 51 characters"],
       required: [true, "Username is missing"],
+    },
+    avatarColor: {
+      type: String,
+      default: "#3b82f6",
+    },
+    avatarUrl: {
+      type: String,
+      default: null,
     },
   },
   { timestamps: true }

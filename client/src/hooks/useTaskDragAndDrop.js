@@ -26,8 +26,9 @@ export function useTaskDragAndDrop({
   const findColumnId = (columns, id) => {
     if (columns.some((column) => column.id === id)) return id;
 
-    return columns.find((column) => column.tasks.some((task) => task.id === id))
-      ?.id;
+    return columns.find((column) =>
+      column.tasks.some((task) => task._id === id)
+    )?.id;
   };
 
   const handleDragOver = ({ active, over }) => {
@@ -47,13 +48,13 @@ export function useTaskDragAndDrop({
       const targetColumn = prev.find((col) => col.id === targetColumnId);
 
       const activeTask = sourceColumn.tasks.find(
-        (task) => task.id === activeId
+        (task) => task._id === activeId
       );
 
       if (!activeTask) return prev;
 
       const overIndex = targetColumn.tasks.findIndex(
-        (task) => task.id === overId
+        (task) => task._id === overId
       );
 
       const insertIndex =
@@ -63,13 +64,13 @@ export function useTaskDragAndDrop({
         if (column.id === sourceColumnId) {
           return {
             ...column,
-            tasks: column.tasks.filter((task) => task.id !== activeId),
+            tasks: column.tasks.filter((task) => task._id !== activeId),
           };
         }
 
         if (column.id === targetColumnId) {
           const cleanTasks = column.tasks.filter(
-            (task) => task.id !== activeId
+            (task) => task._id !== activeId
           );
 
           return {
@@ -103,9 +104,9 @@ export function useTaskDragAndDrop({
     if (!finalColumn) return;
 
     const oldIndex = finalColumn.tasks.findIndex(
-      (task) => task.id === activeId
+      (task) => task._id === activeId
     );
-    const newIndex = finalColumn.tasks.findIndex((task) => task.id === overId);
+    const newIndex = finalColumn.tasks.findIndex((task) => task._id === overId);
 
     let finalTasks = finalColumn.tasks;
 
@@ -121,7 +122,7 @@ export function useTaskDragAndDrop({
       );
     }
 
-    const finalOrder = finalTasks.findIndex((task) => task.id === activeId);
+    const finalOrder = finalTasks.findIndex((task) => task._id === activeId);
 
     await moveTask(activeBoard._id, activeId, {
       column: finalColumnId,

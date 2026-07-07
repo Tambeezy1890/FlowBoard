@@ -1,5 +1,8 @@
 import { useEffect } from "react";
 import { socket } from "../services/socket";
+import { useState } from "react";
+import { toast } from "react-hot-toast";
+import { useAuth } from "../context/authContext";
 
 export const useBoardSocket = ({
   activeBoard,
@@ -7,12 +10,21 @@ export const useBoardSocket = ({
   setBoards,
   setTasks,
 }) => {
+  const [notifications, setNotifications] = useState([]);
+  const { user } = useAuth();
   useEffect(() => {
     if (!activeBoard) return;
     if (!socket.connected) {
       socket.connect();
     }
     socket.emit("join-board", activeBoard._id);
+    const handleNotification = (notification) => {
+      console.log(user.id === notification.senderId);
+      if (notification.senderId === user.id) return;
+
+      setNotifications((prev) => [notification, ...prev]);
+      toast.success(notification.message);
+    };
 
     const handleCreateColumn = ({ boardId, board }) => {
       setBoards((prev) =>
@@ -23,7 +35,7 @@ export const useBoardSocket = ({
     };
     const handleUpdateColumn = ({ boardId, board }) => {
       setBoards((prev) =>
-        prev.map((item) => (item._id === boardId ? board : prev))
+        prev.map((item) => (item._id === boardId ? board : item))
       );
       setActiveBoard((prev) => (prev?._id === boardId ? board : prev));
     };
@@ -55,8 +67,6 @@ export const useBoardSocket = ({
       });
     };
     const replaceTask = ({ boardId, task }) => {
-      console.log("task:", task);
-
       setTasks((prev) =>
         prev.map((item) => (item._id === task._id ? task : item))
       );
@@ -72,6 +82,7 @@ export const useBoardSocket = ({
     socket.on("task:update", replaceTask);
     socket.on("task:delete", handleDeleteTask);
     socket.on("task:move", replaceTask);
+    socket.on("notification:new", handleNotification);
 
     return () => {
       socket.off("column:create", handleCreateColumn);
@@ -81,7 +92,12 @@ export const useBoardSocket = ({
       socket.off("task:update", replaceTask);
       socket.off("task:delete", handleDeleteTask);
       socket.off("task:move", replaceTask);
+      socket.off("notification:new", handleNotification);
       socket.emit("leave-board", activeBoard._id);
     };
   }, [activeBoard?._id, setActiveBoard, setBoards]);
+  return {
+    notifications,
+    setNotifications,
+  };
 };

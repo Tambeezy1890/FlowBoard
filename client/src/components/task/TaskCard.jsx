@@ -3,6 +3,8 @@ import React, { useState } from "react";
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useAuth } from "../../context/authContext";
+import Avatar from "../Avatar";
 
 function TaskCard({ task, columnId, setEditModal, updateTaskStatus }) {
   const {
@@ -13,8 +15,9 @@ function TaskCard({ task, columnId, setEditModal, updateTaskStatus }) {
     transform,
     transition,
   } = useSortable({
-    id: task.id,
+    id: task._id,
   });
+  const { user } = useAuth();
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -26,7 +29,9 @@ function TaskCard({ task, columnId, setEditModal, updateTaskStatus }) {
         <div className="flex gap-2 items-center ">
           <Check
             className={`${task.completed ? "bg-emerald-300" : "bg-slate-400"} rounded-full`}
-            onClick={() => updateTaskStatus(columnId, task.id, !task.completed)}
+            onClick={() =>
+              updateTaskStatus(columnId, task._id, !task.completed)
+            }
             size={18}
           />
           <div className="max-w-38  overflow-auto scrollbar-none">
@@ -57,7 +62,7 @@ function TaskCard({ task, columnId, setEditModal, updateTaskStatus }) {
           <Eye size={18} />
         </button>
 
-        <div className="w-6 h-6 bg-blue-400 rounded-full"></div>
+        <Avatar user={task.createdBy} size="sm" />
       </div>
     </div>
   );

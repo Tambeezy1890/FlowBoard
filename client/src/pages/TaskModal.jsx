@@ -35,7 +35,7 @@ function TaskModal({
           size={20}
           onClick={() => {
             (setEditModal({ show: false, task: null }),
-              deleteTask(columnId, task.id));
+              deleteTask(columnId, task._id));
           }}
         />
       </div>

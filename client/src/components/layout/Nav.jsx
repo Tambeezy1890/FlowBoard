@@ -50,33 +50,45 @@ function Nav({
               <h4 className="text-white text-lg font-semibold mb-3">
                 My Boards
               </h4>
-              {myBoards.map((board) => (
-                <button
-                  key={board._id}
-                  onClick={() => {
-                    setActiveBoard(board);
-                    setMenu(false);
-                  }}
-                  className="w-full text-left px-4 py-3 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/40 text-white border border-indigo-400/30"
-                >
-                  {board.title}
-                </button>
-              ))}
+              {myBoards.length > 0 ? (
+                myBoards.map((board) => (
+                  <button
+                    key={board._id}
+                    onClick={() => {
+                      setActiveBoard(board);
+                      setMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-3 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/40 text-white border border-indigo-400/30"
+                  >
+                    {board.title}
+                  </button>
+                ))
+              ) : (
+                <h3 className="text-lg text-slate-300 bg-indigo-500/20 px-4 py-3 rounded-xl text-center uppercase tracking-tighter">
+                  No boards belonging to this user
+                </h3>
+              )}
               <h4 className="text-white text-lg font-semibold mb-3">
                 Shared Boards
               </h4>
-              {groupBoards.map((board) => (
-                <button
-                  key={board._id}
-                  onClick={() => {
-                    setActiveBoard(board);
-                    setMenu(false);
-                  }}
-                  className="w-full text-left px-4 py-3 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/40 text-white border border-indigo-400/30"
-                >
-                  {board.title}
-                </button>
-              ))}
+              {groupBoards.length > 0 ? (
+                groupBoards.map((board) => (
+                  <button
+                    key={board._id}
+                    onClick={() => {
+                      setActiveBoard(board);
+                      setMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-3 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/40 text-white border border-indigo-400/30"
+                  >
+                    {board.title}
+                  </button>
+                ))
+              ) : (
+                <h3 className="text-lg text-slate-300 bg-indigo-500/20 px-4 py-3 rounded-xl text-center uppercase tracking-tighter">
+                  No Shared boards belonging to this user
+                </h3>
+              )}
             </div>
           </div>
         </div>

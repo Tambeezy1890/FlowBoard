@@ -32,7 +32,7 @@ function TaskDetails({
     if (!hasUserTyped.current) return;
     if (!debouncedTitle.trim()) return;
 
-    updateTitle(columnId, task.id, debouncedTitle);
+    updateTitle(columnId, task._id, debouncedTitle);
   }, [debouncedTitle]);
   const saveTitle = () => {
     const cleanTitle = value.trim();
@@ -46,7 +46,7 @@ function TaskDetails({
 
     if (cleanTitle === task.title) return;
 
-    updateTitle(columnId, task.id, cleanTitle);
+    updateTitle(columnId, task._id, cleanTitle);
   };
 
   return (
@@ -57,7 +57,9 @@ function TaskDetails({
         >
           <Check
             size={20}
-            onClick={() => updateTaskStatus(columnId, task.id, !task.completed)}
+            onClick={() =>
+              updateTaskStatus(columnId, task._id, !task.completed)
+            }
           />
         </div>
         <div className="" onClick={() => setEditing(true)}>
@@ -70,7 +72,13 @@ function TaskDetails({
                 hasUserTyped.current = true;
                 setValue(e.target.value);
               }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  return saveTitle();
+                }
+              }}
               onBlur={saveTitle}
+              className="text-2xl text-slate-300"
             />
           ) : (
             <h1 className="text-2xl text-slate-300 ">{task.title}</h1>

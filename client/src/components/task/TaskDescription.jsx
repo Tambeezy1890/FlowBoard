@@ -10,7 +10,7 @@ function TaskDescription({ task, updateTaskDescription, columnId }) {
   useEffect(() => {
     if (!hasUserTyped.current) return;
 
-    updateTaskDescription(columnId, task.id, debouncedDescription);
+    updateTaskDescription(columnId, task._id, debouncedDescription);
   }, [debouncedDescription]);
   const saveDescription = () => {
     const cleanDescription = description.trim();
@@ -24,7 +24,7 @@ function TaskDescription({ task, updateTaskDescription, columnId }) {
 
     if (cleanDescription === description) return;
 
-    updateTaskDescription(columnId, task.id, cleanDescription);
+    updateTaskDescription(columnId, task._id, cleanDescription);
   };
 
   return (
@@ -40,10 +40,15 @@ function TaskDescription({ task, updateTaskDescription, columnId }) {
             hasUserTyped.current = true;
             setDescription(e.target.value);
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              return saveDescription();
+            }
+          }}
           placeholder="Add a more detailed description"
           rows={4}
           cols={60}
-          className="w-full bg-transparent outline-none resize-none"
+          className="w-full bg-transparent outline-none resize-none text-slate-300"
         />
       </div>
     </div>
