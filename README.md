@@ -186,4 +186,4 @@ Tasks can be moved dynamically between columns.
 Computer Science Student • Full-Stack Developer
 
 - GitHub: https://github.com/Tambeezy1890
-- LinkedIn: https://www.linkedin.com/in/YOUR-LINKEDIN
+- LinkedIn: www.linkedin.com/in/tambowoneyizvirevo
